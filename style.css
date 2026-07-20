@@ -1940,3 +1940,30 @@ summary:focus-visible,
     transition-duration: 0.01ms !important;
   }
 }
+/* =========================================================
+   CUSTOM TERMINAL CURSOR
+========================================================= */
+
+body {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='9' cy='9' r='5' fill='none' stroke='%23ff641f' stroke-width='1.5'/%3E%3Cpath d='M9 1v4M9 13v4M1 9h4M13 9h4' stroke='%23ffb25f' stroke-width='1.5'/%3E%3Ccircle cx='9' cy='9' r='1.5' fill='%23ffb25f'/%3E%3C/svg%3E")
+    9 9,
+    crosshair;
+}
+
+button,
+.record,
+summary,
+select,
+.select,
+.close-btn {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M4 3l17 8-8 3-3 8z' fill='%23ff641f' stroke='%23ffd39c' stroke-width='1'/%3E%3C/svg%3E")
+    4 3,
+    pointer;
+}
+
+input,
+textarea {
+  cursor: text;
+}
