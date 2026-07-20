@@ -641,5 +641,96 @@ $("sortSelect").addEventListener(
   renderRecords
 );
 // 최초 실행
+function createAegisCursorHud() {
 
+  if (!window.matchMedia("(pointer: fine)").matches) {
+    return;
+  }
+
+  const hud = document.createElement("div");
+
+  hud.className = "aegis-cursor-hud";
+
+  document.body.appendChild(hud);
+
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+
+  let hudX = mouseX;
+  let hudY = mouseY;
+
+  document.addEventListener("mousemove", (event) => {
+
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+
+  });
+
+  function animateHud() {
+
+    hudX += (mouseX - hudX) * 0.18;
+    hudY += (mouseY - hudY) * 0.18;
+
+    hud.style.left = `${hudX}px`;
+    hud.style.top = `${hudY}px`;
+
+    requestAnimationFrame(animateHud);
+
+  }
+
+  animateHud();
+
+  const interactiveSelector = [
+    "button",
+    ".record",
+    "summary",
+    "select",
+    "input",
+    "textarea",
+    "a"
+  ].join(",");
+
+  document.addEventListener("mouseover", (event) => {
+
+    if (event.target.closest(interactiveSelector)) {
+      hud.classList.add("interactive");
+    }
+
+  });
+
+  document.addEventListener("mouseout", (event) => {
+
+    if (event.target.closest(interactiveSelector)) {
+      hud.classList.remove("interactive");
+    }
+
+  });
+
+  document.addEventListener("mousedown", () => {
+
+    hud.classList.add("clicking");
+
+    const pulse = document.createElement("div");
+
+    pulse.className = "aegis-cursor-pulse";
+    pulse.style.left = `${mouseX}px`;
+    pulse.style.top = `${mouseY}px`;
+
+    document.body.appendChild(pulse);
+
+    setTimeout(() => {
+      pulse.remove();
+    }, 460);
+
+  });
+
+  document.addEventListener("mouseup", () => {
+
+    hud.classList.remove("clicking");
+
+  });
+
+}
+
+createAegisCursorHud();
 bootSequence();
