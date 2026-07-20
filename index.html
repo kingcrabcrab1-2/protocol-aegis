@@ -28,13 +28,78 @@
           <input id="adminPassword" type="password" autocomplete="current-password" placeholder="관리자 비밀번호" />
           <button id="adminToggle" class="utility-btn wide">관리자 로그인</button>
           <p id="adminStatus" class="muted small"></p>
-          <div id="adminComposer" class="hidden">
-            <div class="divider"></div>
-            <div class="panel-heading">NEW TIMELINE REGISTRATION</div>
-            <label for="teamName">팀 번호 / 이름</label><input id="teamName" autocomplete="off" placeholder="예: 네르사 1팀 / 신지안" />
-            <label for="messageText">메시지</label><textarea id="messageText" placeholder="다른 시간선의 탐사자들에게 남기고 싶은 말을 적어주세요."></textarea>
-            <button id="sendButton" class="primary-btn">새로운 시간선 등록</button><p id="sendStatus" class="muted small"></p>
-          </div>
+       <div id="adminComposer" class="hidden">
+
+  <div class="divider"></div>
+
+  <div class="panel-heading">
+    NEW TIMELINE REGISTRATION
+  </div>
+
+  <label for="teamName">
+    팀 번호 / 이름
+  </label>
+
+  <input
+    id="teamName"
+    autocomplete="off"
+    placeholder="예: 네르사 1팀 / 신지안"
+  />
+
+  <label for="messageText">
+    메시지
+  </label>
+
+  <textarea
+    id="messageText"
+    placeholder="다른 시간선의 탐사자들에게 남기고 싶은 말을 적어주세요."
+  ></textarea>
+
+  <button
+    id="sendButton"
+    class="primary-btn"
+  >
+    새로운 시간선 등록
+  </button>
+
+  <p
+    id="sendStatus"
+    class="muted small"
+  ></p>
+
+  <div class="divider"></div>
+
+  <div class="panel-heading">
+    DATABASE BACKUP
+  </div>
+
+  <button
+    id="backupButton"
+    class="utility-btn wide"
+  >
+    백업 파일 다운로드
+  </button>
+
+  <button
+    id="restoreButton"
+    class="utility-btn wide"
+  >
+    백업 파일 복원
+  </button>
+
+  <input
+    id="restoreFile"
+    type="file"
+    accept=".json,application/json"
+    class="hidden"
+  />
+
+  <p
+    id="backupStatus"
+    class="muted small"
+  ></p>
+
+</div>
         </aside>
       </section>
       <footer>written by. hamge</footer>
