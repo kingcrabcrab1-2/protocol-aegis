@@ -4,50 +4,324 @@ let currentRecord = null;
 let soundOn = false;
 let allRecords = [];
 
+const LOCAL_ADMIN_PASSWORD = "aegis0126";
+
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const timelineNo = (id) => String(id).padStart(6, "0");
-function escapeHTML(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c])); }
-function play(id) { if (!soundOn) return; const el=$(id); if (!el) return; el.currentTime=0; el.play().catch(()=>{}); }
-async function api(path, options={}) {
-  const headers = {"Content-Type":"application/json", ...(options.headers||{})};
-  if (adminPassword) headers["X-Admin-Password"] = adminPassword;
-  const res = await fetch(path, {...options, headers});
-  const data = await res.json().catch(()=>({}));
-  if (!res.ok) throw new Error(data.error || "요청 실패");
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[c]));
+}
+
+function play(id) {
+  if (!soundOn) return;
+  const el = $(id);
+  if (!el) return;
+  el.currentTime = 0;
+  el.play().catch(() => {});
+}
+
+async function api(path, options = {}) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
+
+  if (adminPassword) {
+    headers["X-Admin-Password"] = adminPassword;
+  }
+
+  const res = await fetch(path, { ...options, headers });
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.error || "요청 실패");
+  }
+
   return data;
 }
-async function typeLines(target, lines, delay=120) { let out=""; for(const line of lines){out+=line+"\n";target.textContent=out;play("clickSound");await wait(delay);} }
-async function bootSequence(){
-  const lines=["N.E.R.S.A. U.S. MAIN FACILITY","GARDINERS ISLAND / ARCHIVED TERMINAL","","PROTOCOL : AEGIS","","BOOT SEQUENCE INITIALIZED...","ACCESSING...","VERIFYING UNKNOWN TIMELINE...","SACRIFICE REQUIREMENT : REVOKED","GROUP CONSCIOUSNESS SYNC : STABLE","INTER-TIMELINE RELAY : ONLINE","SIGNAL NOISE : ACCEPTABLE","","WELCOME, UNKNOWN TIMELINE."];
-  let out=""; for(let i=0;i<lines.length;i++){out+=lines[i]+"\n";$("bootText").textContent=out;$("bootFill").style.width=Math.round((i+1)/lines.length*100)+"%";play("clickSound");await wait(i<4?180:120);} await wait(500);$("boot").classList.add("hidden");$("mainApp").classList.remove("hidden");await loadRecords();
+
+async function typeLines(target, lines, delay = 120) {
+  let out = "";
+
+  for (const line of lines) {
+    out += line + "\n";
+    target.textContent = out;
+    play("clickSound");
+    await wait(delay);
+  }
 }
-async function loadRecords(){
-  $("records").innerHTML="<p class='muted'>시간선 기록을 불러오는 중...</p>";
-  try { const data=await api("/api/messages"); allRecords=data.messages||[]; renderRecords(); }
-  catch(e){$("records").innerHTML="<p class='muted'>기록을 불러오지 못했습니다. Cloudflare 설정을 확인하세요.</p>";}
+
+async function bootSequence() {
+  const lines = [
+    "N.E.R.S.A. U.S. MAIN FACILITY",
+    "GARDINERS ISLAND / ARCHIVED TERMINAL",
+    "",
+    "PROTOCOL : AEGIS",
+    "",
+    "BOOT SEQUENCE INITIALIZED...",
+    "ACCESSING...",
+    "VERIFYING UNKNOWN TIMELINE...",
+    "SACRIFICE REQUIREMENT : REVOKED",
+    "GROUP CONSCIOUSNESS SYNC : STABLE",
+    "INTER-TIMELINE RELAY : ONLINE",
+    "SIGNAL NOISE : ACCEPTABLE",
+    "",
+    "WELCOME, UNKNOWN TIMELINE."
+  ];
+
+  let out = "";
+
+  for (let i = 0; i < lines.length; i++) {
+    out += lines[i] + "\n";
+    $("bootText").textContent = out;
+    $("bootFill").style.width =
+      Math.round(((i + 1) / lines.length) * 100) + "%";
+
+    play("clickSound");
+    await wait(i < 4 ? 180 : 120);
+  }
+
+  await wait(500);
+  $("boot").classList.add("hidden");
+  $("mainApp").classList.remove("hidden");
+  await loadRecords();
 }
-function renderRecords(){
-  const keyword=$("searchInput").value.trim().toLowerCase();
-  const asc=$("sortSelect").value==="asc";
-  let filtered=allRecords.filter(item=>`${item.team_name||""} ${item.message||""} ${timelineNo(item.id)}`.toLowerCase().includes(keyword));
-  filtered.sort((a,b)=>a.is_pinned!==b.is_pinned?Number(b.is_pinned)-Number(a.is_pinned):(asc?a.id-b.id:b.id-a.id));
-  if(!filtered.length){$("records").innerHTML="<p class='muted'>검색 결과가 없습니다.</p>";return;}
-  $("records").innerHTML=filtered.map(item=>`<article class="record ${item.is_pinned?"pinned":""}" data-id="${item.id}"><div class="record-no">TIME LINE #${timelineNo(item.id)} ${item.is_pinned?"<span class='pin-label'>★ FIXED</span>":""}</div><div class="record-name">${escapeHTML(item.team_name)}</div></article>`).join("");
-  document.querySelectorAll(".record").forEach(node=>node.addEventListener("click",()=>openReader(allRecords.find(x=>x.id===Number(node.dataset.id)))));
+
+async function loadRecords() {
+  $("records").innerHTML =
+    "<p class='muted'>시간선 기록을 불러오는 중...</p>";
+
+  try {
+    const data = await api("/api/messages");
+    allRecords = data.messages || [];
+    renderRecords();
+  } catch (e) {
+    $("records").innerHTML =
+      "<p class='muted'>기록을 불러오지 못했습니다. Cloudflare 설정을 확인하세요.</p>";
+  }
 }
-async function openReader(record){currentRecord=record;$("reader").classList.remove("hidden");$("messageView").classList.add("hidden");$("decrypt").classList.remove("hidden");await typeLines($("decrypt"),["SIGNAL RECEIVED...","Decrypting...","Synchronization Complete."],210);await wait(260);$("decrypt").classList.add("hidden");$("messageView").classList.remove("hidden");$("viewMeta").textContent=`RECEIVED / TIME LINE #${timelineNo(record.id)}`;$("viewTitle").textContent=record.team_name;$("viewMessage").textContent=record.message;$("pinButton").textContent=record.is_pinned?"고정 해제":"고정";$("adminTools").classList.toggle("hidden",!adminMode);}
-$("readerClose").addEventListener("click",()=>$("reader").classList.add("hidden"));
-$("adminToggle").addEventListener("click",async()=>{
-  if(adminMode){adminMode=false;adminPassword="";$("adminPassword").value="";$("adminComposer").classList.add("hidden");$("adminToggle").textContent="관리자 로그인";$("adminStatus").textContent="로그아웃되었습니다.";$("adminTools").classList.add("hidden");return;}
-  const pw=$("adminPassword").value; if(!pw){$("adminStatus").textContent="비밀번호를 입력해 주세요.";return;} adminPassword=pw;
-  try{await api("/api/admin/verify",{method:"POST",body:"{}"});adminMode=true;$("adminComposer").classList.remove("hidden");$("adminToggle").textContent="관리자 로그아웃";$("adminStatus").textContent="관리자 인증 완료.";}
-  catch(e){adminPassword="";$("adminStatus").textContent="비밀번호가 올바르지 않습니다.";}
+
+function renderRecords() {
+  const keyword = $("searchInput").value.trim().toLowerCase();
+  const asc = $("sortSelect").value === "asc";
+
+  let filtered = allRecords.filter((item) =>
+    `${item.team_name || ""} ${item.message || ""} ${timelineNo(item.id)}`
+      .toLowerCase()
+      .includes(keyword)
+  );
+
+  filtered.sort((a, b) =>
+    a.is_pinned !== b.is_pinned
+      ? Number(b.is_pinned) - Number(a.is_pinned)
+      : asc
+        ? a.id - b.id
+        : b.id - a.id
+  );
+
+  if (!filtered.length) {
+    $("records").innerHTML =
+      "<p class='muted'>검색 결과가 없습니다.</p>";
+    return;
+  }
+
+  $("records").innerHTML = filtered.map((item) => `
+    <article class="record ${item.is_pinned ? "pinned" : ""}" data-id="${item.id}">
+      <div class="record-no">
+        TIME LINE #${timelineNo(item.id)}
+        ${item.is_pinned ? "<span class='pin-label'>★ FIXED</span>" : ""}
+      </div>
+      <div class="record-name">${escapeHTML(item.team_name)}</div>
+    </article>
+  `).join("");
+
+  document.querySelectorAll(".record").forEach((node) => {
+    node.addEventListener("click", () => {
+      const record = allRecords.find(
+        (item) => item.id === Number(node.dataset.id)
+      );
+      openReader(record);
+    });
+  });
+}
+
+async function openReader(record) {
+  currentRecord = record;
+
+  $("reader").classList.remove("hidden");
+  $("messageView").classList.add("hidden");
+  $("decrypt").classList.remove("hidden");
+
+  await typeLines(
+    $("decrypt"),
+    [
+      "SIGNAL RECEIVED...",
+      "Decrypting...",
+      "Synchronization Complete."
+    ],
+    210
+  );
+
+  await wait(260);
+
+  $("decrypt").classList.add("hidden");
+  $("messageView").classList.remove("hidden");
+
+  $("viewMeta").textContent =
+    `RECEIVED / TIME LINE #${timelineNo(record.id)}`;
+
+  $("viewTitle").textContent = record.team_name;
+  $("viewMessage").textContent = record.message;
+  $("pinButton").textContent =
+    record.is_pinned ? "고정 해제" : "고정";
+
+  $("adminTools").classList.toggle("hidden", !adminMode);
+}
+
+$("readerClose").addEventListener("click", () => {
+  $("reader").classList.add("hidden");
 });
-$("sendButton").addEventListener("click",async()=>{const team_name=$("teamName").value.trim()||"UNKNOWN TIMELINE";const message=$("messageText").value.trim();if(!message){$("sendStatus").textContent="메시지를 입력해 주세요.";return;}$("sendStatus").textContent="TRANSMITTING...";try{await api("/api/messages",{method:"POST",body:JSON.stringify({team_name,message})});play("sendSound");$("messageText").value="";$("sendStatus").textContent="등록 완료.";await loadRecords();}catch(e){$("sendStatus").textContent=e.message;}});
-$("editButton").addEventListener("click",async()=>{if(!currentRecord)return;const message=prompt("수정할 메시지를 입력하세요.",currentRecord.message);if(message===null)return;try{await api(`/api/messages/${currentRecord.id}`,{method:"PATCH",body:JSON.stringify({message})});$("reader").classList.add("hidden");await loadRecords();}catch(e){alert(e.message);}});
-$("deleteButton").addEventListener("click",async()=>{if(!currentRecord||!confirm("정말 삭제하시겠습니까?"))return;try{await api(`/api/messages/${currentRecord.id}`,{method:"DELETE"});$("reader").classList.add("hidden");await loadRecords();}catch(e){alert(e.message);}});
-$("pinButton").addEventListener("click",async()=>{if(!currentRecord)return;try{await api(`/api/messages/${currentRecord.id}`,{method:"PATCH",body:JSON.stringify({is_pinned:!currentRecord.is_pinned})});$("reader").classList.add("hidden");await loadRecords();}catch(e){alert(e.message);}});
-$("soundToggle").addEventListener("click",()=>{soundOn=!soundOn;$("soundToggle").textContent=soundOn?"SOUND ON":"SOUND OFF";});
-$("searchInput").addEventListener("input",renderRecords);$("sortSelect").addEventListener("change",renderRecords);
+
+$("adminToggle").addEventListener("click", () => {
+  if (adminMode) {
+    adminMode = false;
+    adminPassword = "";
+
+    $("adminPassword").value = "";
+    $("adminComposer").classList.add("hidden");
+    $("adminToggle").textContent = "관리자 로그인";
+    $("adminStatus").textContent = "로그아웃되었습니다.";
+    $("adminTools").classList.add("hidden");
+    return;
+  }
+
+  const pw = $("adminPassword").value;
+
+  if (!pw) {
+    $("adminStatus").textContent =
+      "비밀번호를 입력해 주세요.";
+    return;
+  }
+
+  if (pw !== LOCAL_ADMIN_PASSWORD) {
+    $("adminStatus").textContent =
+      "비밀번호가 올바르지 않습니다.";
+    return;
+  }
+
+  adminPassword = pw;
+  adminMode = true;
+
+  $("adminComposer").classList.remove("hidden");
+  $("adminToggle").textContent = "관리자 로그아웃";
+  $("adminStatus").textContent = "관리자 인증 완료.";
+
+  if (currentRecord) {
+    $("adminTools").classList.remove("hidden");
+  }
+});
+
+$("sendButton").addEventListener("click", async () => {
+  const team_name =
+    $("teamName").value.trim() || "UNKNOWN TIMELINE";
+
+  const message = $("messageText").value.trim();
+
+  if (!message) {
+    $("sendStatus").textContent =
+      "메시지를 입력해 주세요.";
+    return;
+  }
+
+  $("sendStatus").textContent = "TRANSMITTING...";
+
+  try {
+    await api("/api/messages", {
+      method: "POST",
+      body: JSON.stringify({ team_name, message })
+    });
+
+    play("sendSound");
+    $("messageText").value = "";
+    $("sendStatus").textContent = "등록 완료.";
+    await loadRecords();
+  } catch (e) {
+    $("sendStatus").textContent = e.message;
+  }
+});
+
+$("editButton").addEventListener("click", async () => {
+  if (!currentRecord) return;
+
+  const message = prompt(
+    "수정할 메시지를 입력하세요.",
+    currentRecord.message
+  );
+
+  if (message === null) return;
+
+  try {
+    await api(`/api/messages/${currentRecord.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ message })
+    });
+
+    $("reader").classList.add("hidden");
+    await loadRecords();
+  } catch (e) {
+    alert(e.message);
+  }
+});
+
+$("deleteButton").addEventListener("click", async () => {
+  if (!currentRecord) return;
+  if (!confirm("정말 삭제하시겠습니까?")) return;
+
+  try {
+    await api(`/api/messages/${currentRecord.id}`, {
+      method: "DELETE"
+    });
+
+    $("reader").classList.add("hidden");
+    await loadRecords();
+  } catch (e) {
+    alert(e.message);
+  }
+});
+
+$("pinButton").addEventListener("click", async () => {
+  if (!currentRecord) return;
+
+  try {
+    await api(`/api/messages/${currentRecord.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        is_pinned: !currentRecord.is_pinned
+      })
+    });
+
+    $("reader").classList.add("hidden");
+    await loadRecords();
+  } catch (e) {
+    alert(e.message);
+  }
+});
+
+$("soundToggle").addEventListener("click", () => {
+  soundOn = !soundOn;
+  $("soundToggle").textContent =
+    soundOn ? "SOUND ON" : "SOUND OFF";
+});
+
+$("searchInput").addEventListener("input", renderRecords);
+$("sortSelect").addEventListener("change", renderRecords);
+
 bootSequence();
