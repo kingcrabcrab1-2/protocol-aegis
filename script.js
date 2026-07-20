@@ -20,15 +20,35 @@ function escapeHTML(value) {
   }[c]));
 }
 
-let audioCtx;
+let audioCtx = null;
 
-function play(id){
+function play(id) {
+  if (!soundOn) return;
 
-    if(!soundOn) return;
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
 
-    if(!audioCtx){
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const now = audioCtx.currentTime;
+
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(1550 + Math.random() * 180, now);
+
+  gain.gain.setValueAtTime(0.055, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start(now);
+  osc.stop(now + 0.026);
+}
 
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
