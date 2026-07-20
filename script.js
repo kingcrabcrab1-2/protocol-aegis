@@ -425,14 +425,7 @@ $("adminToggle").addEventListener(
       return;
 
     }
-        if (pw !== LOCAL_ADMIN_PASSWORD) {
-
-      $("adminStatus").textContent =
-        "비밀번호가 올바르지 않습니다.";
-
-      return;
-
-    }
+    
 
     adminPassword = pw;
     adminMode = true;
