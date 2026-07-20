@@ -4,7 +4,7 @@ let currentRecord = null;
 let soundOn = true;
 let allRecords = [];
 
-const LOCAL_ADMIN_PASSWORD = "aegis0126";
+
 
 const $ = (id) => document.getElementById(id);
 
