@@ -741,6 +741,68 @@ function createAegisCursorHud() {
   });
 
 }
+$("backupButton").addEventListener(
+  "click",
+  async () => {
 
+    $("backupStatus").textContent =
+      "백업 파일을 만드는 중...";
+
+    try {
+
+      const data = await api("/api/messages");
+
+      const backup = {
+        protocol: "AEGIS",
+        version: 1,
+        createdAt: new Date().toISOString(),
+        recordCount: (data.messages || []).length,
+        messages: data.messages || []
+      };
+
+      const blob = new Blob(
+        [JSON.stringify(backup, null, 2)],
+        {
+          type: "application/json;charset=utf-8"
+        }
+      );
+
+      const url =
+        URL.createObjectURL(blob);
+
+      const link =
+        document.createElement("a");
+
+      const now = new Date();
+
+      const date =
+        now.toISOString()
+          .slice(0, 19)
+          .replace(/:/g, "-");
+
+      link.href = url;
+
+      link.download =
+        `AEGIS_BACKUP_${date}.json`;
+
+      document.body.appendChild(link);
+
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(url);
+
+      $("backupStatus").textContent =
+        `${backup.recordCount}개의 메시지를 백업했습니다.`;
+
+    } catch (error) {
+
+      $("backupStatus").textContent =
+        "백업에 실패했습니다.";
+
+    }
+
+  }
+);
 createAegisCursorHud();
 bootSequence();
