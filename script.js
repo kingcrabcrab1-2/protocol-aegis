@@ -92,17 +92,29 @@ async function typeLines(target, lines, delay = 120) {
 }
 
 async function typeMessage(target, text) {
+
   target.textContent = "";
+  target.classList.add("typing");
 
   for (const ch of String(text ?? "")) {
+
     target.textContent += ch;
 
-    if (soundOn && ch !== " " && ch !== "\n") {
+    if (
+      soundOn &&
+      ch !== " " &&
+      ch !== "\n" &&
+      Math.random() < 0.7
+    ) {
       play("clickSound");
     }
 
     await wait(18);
+
   }
+
+  target.classList.remove("typing");
+
 }
 
 async function bootSequence() {
