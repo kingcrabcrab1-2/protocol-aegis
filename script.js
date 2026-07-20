@@ -1,7 +1,7 @@
 let adminMode = false;
 let adminPassword = "";
 let currentRecord = null;
-let soundOn = false;
+let soundOn = true;
 let allRecords = [];
 
 const LOCAL_ADMIN_PASSWORD = "aegis0126";
@@ -49,62 +49,41 @@ async function api(path, options = {}) {
 }
 
 async function typeLines(target, lines, delay = 120) {
-
   target.textContent = "";
 
   for (const line of lines) {
-
-    let current = "";
-
     for (const ch of line) {
-
-      current += ch;
-
       target.textContent += ch;
 
-      if(soundOn && ch !== " "){
+      if (soundOn && ch !== " " && ch !== "\n") {
         play("clickSound");
       }
 
-      await wait(16);
-
+      await wait(18);
     }
 
     target.textContent += "\n";
-
     await wait(delay);
-
   }
-
 }
-async function typeMessage(target, text){
 
-  target.textContent="";
+async function typeMessage(target, text) {
+  target.textContent = "";
 
-  for(const ch of text){
-
+  for (const ch of String(text ?? "")) {
     target.textContent += ch;
 
-    if(soundOn && ch!==" " && ch!=="\n"){
+    if (soundOn && ch !== " " && ch !== "\n") {
       play("clickSound");
     }
 
     await wait(18);
-
-  }
-
-}
-  let out = "";
-
-  for (const line of lines) {
-    out += line + "\n";
-    target.textContent = out;
-    play("clickSound");
-    await wait(delay);
   }
 }
 
 async function bootSequence() {
+  $("soundToggle").textContent = soundOn ? "SOUND ON" : "SOUND OFF";
+
   const lines = [
     "N.E.R.S.A. U.S. MAIN FACILITY",
     "GARDINERS ISLAND / ARCHIVED TERMINAL",
@@ -193,12 +172,15 @@ function renderRecords() {
       const record = allRecords.find(
         (item) => item.id === Number(node.dataset.id)
       );
+
       openReader(record);
     });
   });
 }
 
 async function openReader(record) {
+  if (!record) return;
+
   currentRecord = record;
 
   $("reader").classList.remove("hidden");
@@ -224,14 +206,12 @@ async function openReader(record) {
     `RECEIVED / TIME LINE #${timelineNo(record.id)}`;
 
   $("viewTitle").textContent = record.team_name;
- await typeMessage(
-    $("viewMessage"),
-    record.message
-);
   $("pinButton").textContent =
     record.is_pinned ? "고정 해제" : "고정";
 
   $("adminTools").classList.toggle("hidden", !adminMode);
+
+  await typeMessage($("viewMessage"), record.message);
 }
 
 $("readerClose").addEventListener("click", () => {
