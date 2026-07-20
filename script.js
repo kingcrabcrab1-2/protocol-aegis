@@ -387,7 +387,7 @@ $("readerClose").addEventListener(
 
 $("adminToggle").addEventListener(
   "click",
-  () => {
+  async () => {
 
     if (adminMode) {
 
