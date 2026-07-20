@@ -37,17 +37,17 @@ function play(id) {
   const gain = audioCtx.createGain();
   const now = audioCtx.currentTime;
 
-  osc.type = "triangle";
-  osc.frequency.setValueAtTime(1550 + Math.random() * 180, now);
+  osc.type = "square";
+  osc.frequency.setValueAtTime(1650 + Math.random() * 220, now);
 
-  gain.gain.setValueAtTime(0.055, now);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+  gain.gain.setValueAtTime(0.035, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
 
   osc.connect(gain);
   gain.connect(audioCtx.destination);
 
   osc.start(now);
-  osc.stop(now + 0.026);
+  osc.stop(now + 0.019);
 }
 
     const osc = audioCtx.createOscillator();
