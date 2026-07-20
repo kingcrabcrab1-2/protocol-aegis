@@ -20,12 +20,36 @@ function escapeHTML(value) {
   }[c]));
 }
 
-function play(id) {
-  if (!soundOn) return;
-  const el = $(id);
-  if (!el) return;
-  el.currentTime = 0;
-  el.play().catch(() => {});
+let audioCtx;
+
+function play(id){
+
+    if(!soundOn) return;
+
+    if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "square";
+    osc.frequency.value = 1700 + Math.random()*120;
+
+    gain.gain.value = 0.02;
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        audioCtx.currentTime + 0.02
+    );
+
+    osc.stop(audioCtx.currentTime + 0.02);
+
 }
 
 async function api(path, options = {}) {
