@@ -49,6 +49,51 @@ async function api(path, options = {}) {
 }
 
 async function typeLines(target, lines, delay = 120) {
+
+  target.textContent = "";
+
+  for (const line of lines) {
+
+    let current = "";
+
+    for (const ch of line) {
+
+      current += ch;
+
+      target.textContent += ch;
+
+      if(soundOn && ch !== " "){
+        play("clickSound");
+      }
+
+      await wait(16);
+
+    }
+
+    target.textContent += "\n";
+
+    await wait(delay);
+
+  }
+
+}
+async function typeMessage(target, text){
+
+  target.textContent="";
+
+  for(const ch of text){
+
+    target.textContent += ch;
+
+    if(soundOn && ch!==" " && ch!=="\n"){
+      play("clickSound");
+    }
+
+    await wait(18);
+
+  }
+
+}
   let out = "";
 
   for (const line of lines) {
@@ -179,7 +224,10 @@ async function openReader(record) {
     `RECEIVED / TIME LINE #${timelineNo(record.id)}`;
 
   $("viewTitle").textContent = record.team_name;
-  $("viewMessage").textContent = record.message;
+ await typeMessage(
+    $("viewMessage"),
+    record.message
+);
   $("pinButton").textContent =
     record.is_pinned ? "고정 해제" : "고정";
 
