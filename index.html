@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PROTOCOL : AEGIS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="crt-noise"></div><div class="scanline"></div><div class="flicker"></div><div class="vignette"></div>
+  <main class="shell">
+    <section id="boot" class="boot-screen"><div class="boot-box"><pre id="bootText"></pre><div class="boot-bar"><span id="bootFill"></span></div></div></section>
+    <section id="mainApp" class="hidden">
+      <header class="topbar">
+        <div><p class="kicker">N.E.R.S.A. U.S. MAIN FACILITY / GARDINERS ISLAND</p><h1>PROTOCOL : AEGIS</h1><p class="subtitle">ARCHIVED INTER-TIMELINE RELAY TERMINAL</p></div>
+        <button id="soundToggle" class="utility-btn">SOUND OFF</button>
+      </header>
+      <section class="terminal-panel system-panel"><div class="panel-heading">SYSTEM STATUS</div><div class="system-log"><p>Synchronizing Timeline...</p><p class="redacted">■■■■■■■■■■■■■■개의 시간선 감지</p><p>새로운 시간선이 연결되었습니다.</p></div></section>
+      <section class="layout">
+        <section class="terminal-panel records-panel">
+          <div class="panel-heading row-heading"><span>RECEIVED RECORDS</span><select id="sortSelect" class="select"><option value="asc">오래된 시간선순</option><option value="desc">최신 시간선순</option></select></div>
+          <input id="searchInput" class="search" placeholder="시간선 검색 / 팀 번호 / 이름 / 메시지" />
+          <div id="records" class="records"><p class="muted">시간선 기록을 불러오는 중...</p></div>
+        </section>
+        <aside class="terminal-panel transmit-panel">
+          <div class="panel-heading">ADMIN ACCESS</div>
+          <label for="adminPassword">관리자 비밀번호</label>
+          <input id="adminPassword" type="password" autocomplete="current-password" placeholder="관리자 비밀번호" />
+          <button id="adminToggle" class="utility-btn wide">관리자 로그인</button>
+          <p id="adminStatus" class="muted small"></p>
+          <div id="adminComposer" class="hidden">
+            <div class="divider"></div>
+            <div class="panel-heading">NEW TIMELINE REGISTRATION</div>
+            <label for="teamName">팀 번호 / 이름</label><input id="teamName" autocomplete="off" placeholder="예: 네르사 1팀 / 신지안" />
+            <label for="messageText">메시지</label><textarea id="messageText" placeholder="다른 시간선의 탐사자들에게 남기고 싶은 말을 적어주세요."></textarea>
+            <button id="sendButton" class="primary-btn">새로운 시간선 등록</button><p id="sendStatus" class="muted small"></p>
+          </div>
+        </aside>
+      </section>
+      <footer>written by. hamge</footer>
+    </section>
+  </main>
+  <section id="reader" class="reader hidden"><div class="reader-box"><button id="readerClose" class="close-btn">×</button><div id="decrypt" class="decrypt"></div><div id="messageView" class="hidden"><p id="viewMeta" class="kicker"></p><h2 id="viewTitle"></h2><pre id="viewMessage"></pre><div id="adminTools" class="admin-tools hidden"><button id="editButton" class="utility-btn">수정</button><button id="pinButton" class="utility-btn">고정/해제</button><button id="deleteButton" class="danger-btn">삭제</button></div></div></div></section>
+  <audio id="clickSound" preload="auto"><source src="data:audio/wav;base64,UklGRpYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXIAAAD///39/Pz8+/r6+fn49/f29fX09PPz8vLy8PDv7+7u7Ozr6+np6Ojn5+bm5eXk5OPj4uLh4eDg39/f3t7e3d3c3Nzb29ra2dnY2NfX1tbW1dXV1NTU09PT0tLS0dHR0NDQz8/Pzs7Ozc3NzMzM" type="audio/wav" /></audio>
+  <audio id="sendSound" preload="auto"><source src="data:audio/wav;base64,UklGRrYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZIAAADAwMPEyMzQ1Njc5Ojs8PDxAPDw8Ojo6ODg4NjY2NDQ0MjIyMDAwLi4uLCwsKioqKCgoJiYmJCQkIiIiICAgIiIiJCQkJiYmKCgoKioqLCwsLi4uMDAwMjIyNDQ0NjY2ODg4Ojo6PDw8QEBAQkJCQ0ND" type="audio/wav" /></audio>
+  <script src="./script.js"></script>
+</body>
+</html>
