@@ -78,3 +78,30 @@
 @keyframes nrsP5Clearance{0%{opacity:0;transform:translateY(-5px)}20%,65%{opacity:.9;transform:translateY(0)}100%{opacity:0}}
 @media(max-width:750px){#mainApp .nrs-p5-layer{display:none!important}#mainApp .reader-box .nrs-p5-clearance{top:46px;left:12px;right:12px;font-size:7px;letter-spacing:.04em}#mainApp .archive-records .record .nrs-p5-beacon{width:4px;height:4px}}
 @media(prefers-reduced-motion:reduce){#mainApp .nrs-p5-layer{display:none!important}#mainApp .archive-records .record .nrs-p5-beacon{animation:none!important}#mainApp .reader-box .nrs-p5-clearance{display:none!important}}
+
+/* Hide unused status and signal counters while preserving archive logic. */
+#mainApp .nrs-telemetry, #mainApp .nrs-orbit-coordinates, #mainApp #archiveCount { display:none !important; }
+
+/* Persistent high-visibility archive authentication stamp (Phase 5 HUD cleanup retained). */
+#mainApp .reader-box .nrs-verified-stamp{
+  position:absolute;top:82px;right:24px;z-index:8;
+  display:block;max-width:calc(100% - 48px);box-sizing:border-box;
+  padding:10px 15px;border:1.5px solid #ffd9a3;border-radius:3px;
+  background:rgba(42,20,8,.9);color:#ffe4b5;
+  font:800 clamp(12px,1.25vw,16px)/1.3 ui-monospace,Consolas,monospace;
+  letter-spacing:.12em;text-align:center;white-space:normal;
+  text-shadow:0 0 5px #ffb45b,0 0 13px rgba(255,150,48,.8);
+  box-shadow:0 0 12px rgba(255,150,48,.45),inset 0 0 12px rgba(255,150,48,.15);
+  opacity:0;visibility:hidden;transform:rotate(-2deg) scale(.97);
+  transition:opacity .22s ease-out,transform .22s ease-out,visibility .22s;
+  animation:none!important;pointer-events:none;
+}
+#mainApp .reader-box .nrs-verified-stamp.nrs-stamp-show{
+  opacity:1;visibility:visible;transform:rotate(-2deg) scale(1);animation:none!important;
+}
+@media(max-width:750px){
+  #mainApp .reader-box .nrs-verified-stamp{top:78px;right:12px;max-width:calc(100% - 24px);padding:7px 9px;font-size:11px;letter-spacing:.06em}
+}
+@media(prefers-reduced-motion:reduce){
+  #mainApp .reader-box .nrs-verified-stamp{transition:none!important}
+}

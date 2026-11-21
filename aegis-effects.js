@@ -93,27 +93,12 @@
   const active=()=>!app.classList.contains('hidden')&&!reduced.matches&&!document.hidden;
   const overlay=document.createElement('div');overlay.className='nrs-observation-overlay';overlay.setAttribute('aria-hidden','true');stage.append(overlay);
   const iris=document.createElement('div');iris.className='nrs-observatory-iris';iris.setAttribute('aria-hidden','true');stage.append(iris);
-  const telemetry=document.createElement('aside');telemetry.className='nrs-telemetry';telemetry.setAttribute('aria-label','NRS 관측 상태 (연출)');
-  telemetry.innerHTML='<div class="nrs-telemetry-title">NRS // TELEMETRY FEED <span class="nrs-live-dot">●</span></div><div class="nrs-telemetry-status">수신 상태 양호 <span>RELAY / STABLE</span></div><div class="nrs-telemetry-lines" aria-live="off"><div>SYNC STATUS <b>NOMINAL</b></div><div>ARCHIVE LINK <b>VERIFIED</b></div><div>NOISE LEVEL <b>LOW</b></div></div><div class="nrs-telemetry-last">SYSTEM CHECK / COMPLETE</div>';
-  stage.append(telemetry);
-  const lines=telemetry.querySelector('.nrs-telemetry-last');
-  const log=['RELAY HANDSHAKE / OK','TIMELINE INDEX / SYNC','SIGNAL INTEGRITY / NOMINAL','ARCHIVE LINK / VERIFIED','PACKET CHECK / COMPLETE','CHANNEL STATUS / STABLE'];
-  let logIndex=0;
-  setInterval(()=>{if(!active())return;lines.textContent=log[logIndex++%log.length];lines.classList.remove('nrs-log-update');void lines.offsetWidth;lines.classList.add('nrs-log-update');},5600);
+  // Telemetry status panel and rotating system log removed at user request.
   // Sync pulse: slow, subtle and not on the message text.
   setInterval(()=>{if(!active()||mobile.matches||!reader.classList.contains('hidden'))return;const el=document.createElement('i');el.className='nrs-sync-pulse';overlay.append(el);setTimeout(()=>el.remove(),2500);},19000);
   // Very rare scan interference; confined to the backdrop, not the reader.
   setInterval(()=>{if(!active()||mobile.matches||!reader.classList.contains('hidden'))return;const el=document.createElement('i');el.className='nrs-interference';overlay.append(el);setTimeout(()=>el.remove(),700);},29000);
-  const targetCoords=new WeakMap();
-  const cardsObserver=new MutationObserver(()=>{
-    records.querySelectorAll('.record').forEach(card=>{
-      if(targetCoords.has(card))return;
-      const label=document.createElement('span');label.className='nrs-orbit-coordinates';label.setAttribute('aria-hidden','true');card.append(label);
-      const enter=()=>{const x=Math.round(parseFloat(card.style.getPropertyValue('--pos-x'))||0),y=Math.round(parseFloat(card.style.getPropertyValue('--pos-y'))||0);label.textContent=`LOC ${x>=0?'+':''}${x} / ${y>=0?'+':''}${y}`;};
-      card.addEventListener('pointerenter',enter);card.addEventListener('focus',enter);
-      targetCoords.set(card,label);
-    });
-  });cardsObserver.observe(records,{childList:true});
+  // Per-record coordinate readouts removed at user request.
   function burst(x,y){if(!active()||mobile.matches)return;
     for(let i=0;i<11;i++){const p=document.createElement('i');p.className='nrs-data-particle';p.style.left=x+'px';p.style.top=y+'px';p.style.setProperty('--dx',`${(Math.random()-.5)*130}px`);p.style.setProperty('--dy',`${(Math.random()-.5)*110}px`);overlay.append(p);setTimeout(()=>p.remove(),850);}
   }
@@ -131,14 +116,12 @@
   // Authenticated stamp appears only after the existing decrypt stage finishes.
   const box=reader.querySelector('.reader-box'),messageView=document.getElementById('messageView');
   if(box&&messageView){
-    const stamp=document.createElement('div');stamp.className='nrs-verified-stamp';stamp.setAttribute('aria-hidden','true');stamp.textContent='NRS VERIFIED  /  ARCHIVE AUTHENTICATED';box.append(stamp);
-    let stampTimer;
+    const stamp=document.createElement('div');stamp.className='nrs-verified-stamp';stamp.setAttribute('aria-hidden','true');stamp.textContent='ARCHIVE AUTHENTICATED';box.append(stamp);
     const update=()=>{
       const shown=!reader.classList.contains('hidden')&&!messageView.classList.contains('hidden');
-      if(!shown){clearTimeout(stampTimer);stamp.classList.remove('nrs-stamp-show');return;}
-      stamp.classList.remove('nrs-stamp-show');void stamp.offsetWidth;
-      if(!reduced.matches){stamp.classList.add('nrs-stamp-show');clearTimeout(stampTimer);stampTimer=setTimeout(()=>stamp.classList.remove('nrs-stamp-show'),1500);}
+      stamp.classList.toggle('nrs-stamp-show',shown);
     };
+    update();
     new MutationObserver(update).observe(messageView,{attributes:true,attributeFilter:['class']});
     new MutationObserver(update).observe(reader,{attributes:true,attributeFilter:['class']});
   }
