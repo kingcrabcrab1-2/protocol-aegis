@@ -36,3 +36,16 @@
 .ai-gate-button:hover,.ai-gate-button:focus-visible{background:rgba(70,180,200,.28);outline:2px solid #81e6ef;outline-offset:3px}
 .ai-gate-muted{border-color:transparent;background:transparent;color:#9c93b7;font-size:12px;padding:9px}
 .ai-gate-muted:hover,.ai-gate-muted:focus-visible{text-decoration:underline}
+
+/* White/orange consent screen: high-contrast primary action */
+.ai-gate{background:#fffaf5;color:#963e10;gap:20px}
+.ai-gate-kicker{color:#a54b1a;font-size:clamp(11px,1.25vw,15px);letter-spacing:.06em}
+.ai-gate h2{color:#92380e;font-weight:700;text-shadow:none;letter-spacing:.05em;font-size:clamp(32px,5vw,64px)}
+.ai-gate p{color:#5e4436;max-width:640px;font-size:clamp(14px,1.6vw,18px);letter-spacing:0;line-height:1.8;margin:0 0 8px}
+.ai-gate-button{background:#a84616;color:white;border:2px solid #a84616;padding:17px 44px;font-size:clamp(17px,2vw,23px);font-weight:700;letter-spacing:.03em;border-radius:3px;box-shadow:0 5px 22px rgba(133,56,15,.2)}
+.ai-gate-button:hover,.ai-gate-button:focus-visible{background:#80320d;color:white;outline:3px solid #db8c58;outline-offset:4px}
+.ai-gate-muted{color:#8d6650;font-size:14px;letter-spacing:0;text-decoration:underline;text-underline-offset:4px}
+.ai-gate-muted:hover,.ai-gate-muted:focus-visible{color:#8a320c}
+.ai-auth canvas{pointer-events:none}
+.ai-auth h2,.ai-auth p,.ai-auth button{position:relative;z-index:1}
+.ai-enter{position:relative;z-index:2;pointer-events:auto}

@@ -42,41 +42,80 @@ const root = el("div", "aegis-intro"); root.setAttribute("role", "dialog"); root
 cv = el("canvas", "", root);
 const phase = el("div", "ai-phase", root), log = el("pre", "ai-log", root), cur = el("i");
 const hl = el("div", "ai-hud ai-hl", root), hr = el("div", "ai-hud ai-hr", root), lab = el("div", "ai-hud ai-label", root);
-const auth = el("div", "ai-auth", root), rad = el("canvas", "", auth); rad.style.cssText = "position:absolute;inset:0;opacity:.9";
+const auth = el("div", "ai-auth", root), rad = el("canvas", "", auth); rad.style.cssText = "position:absolute;inset:0;opacity:.9;pointer-events:none";
 const t1 = el("h2", "", auth, "PROTOCOL : AEGIS"), t2 = el("p", "", auth, "ARCHIVED INTER-TIMELINE RELAY TERMINAL"), t3 = el("p", "", auth), enter = el("button", "ai-enter", auth, "ENTER ARCHIVE");
 const skip = el("button", "ai-skip", root, "SKIP ▸▸"); skip.type = "button"; enter.type = "button";
 el("div", "ai-sign", root, "written by. hamge");
 const gate = el("div", "ai-gate", root);
-el("div", "ai-gate-kicker", gate, "N.E.R.S.A. / INTER-TIMELINE SYSTEM");
-el("h2", "", gate, "INITIAL CONNECTION");
-el("p", "", gate, "AUDIO INITIALIZATION REQUIRED");
-const startSound = el("button", "ai-gate-button", gate, "INITIALIZE SYSTEM  /  SOUND ON");
-const startSilent = el("button", "ai-gate-muted", gate, "CONTINUE WITHOUT SOUND");
+el("div", "ai-gate-kicker", gate, "N.R.S / 타임라인 간 시스템 연결 시도중 ···");
+el("h2", "", gate, "존재 접근 확인");
+el("p", "", gate, "존재성을 헌납하였기 때문에 감각 이상 현상이 일어날 수 있습니다. 앞으로 나아가시겠습니까?");
+const startSound = el("button", "ai-gate-button", gate, "앞으로 나아간다.");
+const startSilent = el("button", "ai-gate-muted", gate, "감각 활성화를 끕니다.");
 startSound.type = startSilent.type = "button";
-let introAudio = null, audioEnabled = false;
+let introAudio = null, audioEnabled = false, master = null;
+function setupAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return false;
+  introAudio = new AC();
+  const limiter = introAudio.createDynamicsCompressor();
+  limiter.threshold.value = -14; limiter.knee.value = 14; limiter.ratio.value = 8;
+  limiter.attack.value = .008; limiter.release.value = .24;
+  master = introAudio.createGain(); master.gain.value = .78;
+  master.connect(limiter); limiter.connect(introAudio.destination);
+  return true;
+}
 function soundEvent(kind, step=0) {
-  if (!audioEnabled || !introAudio) return;
+  if (!audioEnabled || !introAudio || !master) return;
   try {
-    const t=introAudio.currentTime+.015;
-    const note=(freq, at, duration, volume, wave="sine", endFreq=freq) => {
-      const o=introAudio.createOscillator(), g=introAudio.createGain(); o.type=wave;
+    const ac = introAudio, t = ac.currentTime + .03;
+    const note = (freq, at, duration, volume, wave="sine", endFreq=freq) => {
+      const o=ac.createOscillator(), g=ac.createGain(); o.type=wave;
       o.frequency.setValueAtTime(Math.max(20,freq),at);
       o.frequency.exponentialRampToValueAtTime(Math.max(20,endFreq),at+duration);
       g.gain.setValueAtTime(.0001,at);
-      g.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),at+Math.min(.05,duration*.22));
-      g.gain.exponentialRampToValueAtTime(.0001,at+duration);
-      o.connect(g);g.connect(introAudio.destination);o.start(at);o.stop(at+duration+.02);
+      g.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),at+Math.min(.18,duration*.25));
+      g.gain.setTargetAtTime(.0001,at+duration*.66,Math.max(.06,duration*.12));
+      o.connect(g); g.connect(master); o.start(at); o.stop(at+duration+.2);
     };
-    if(kind==="boot") {note(54,t,1.8,.11,"sawtooth",84);note(220,t+.12,.7,.045,"sine",440);note(660,t+.55,.32,.035,"triangle",990);note(880,t+1.05,.28,.025,"sine",1320);}
-    if(kind==="transition") {note(95+step*17,t,.65,.045,"triangle",190+step*25);note(420+step*31,t+.15,.2,.018,"sine",620+step*34);}
-    if(kind==="converge") {note(90,t,1.5,.08,"sawtooth",42);note(440,t+.15,1.1,.03,"sine",880);note(660,t+.32,.9,.02,"triangle",990);}
-  } catch(e) { /* audio may be blocked */ }
+    const rumble = (at, duration, volume) => {
+      const len=Math.ceil(ac.sampleRate*Math.min(duration,3));
+      const buffer=ac.createBuffer(1,len,ac.sampleRate), d=buffer.getChannelData(0);
+      for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+      const src=ac.createBufferSource(), lp=ac.createBiquadFilter(), g=ac.createGain();
+      src.buffer=buffer; lp.type="lowpass"; lp.frequency.value=160; lp.Q.value=.6;
+      g.gain.setValueAtTime(.0001,at); g.gain.linearRampToValueAtTime(volume,at+.25);
+      g.gain.exponentialRampToValueAtTime(.0001,at+duration);
+      src.connect(lp); lp.connect(g); g.connect(master); src.start(at); src.stop(at+duration);
+    };
+    if(kind==="boot") {
+      rumble(t,2.7,.25);
+      note(38,t,2.6,.26,"sawtooth",63);
+      note(55,t+.1,2.6,.34,"sine",82);
+      note(110,t+.38,2.2,.16,"triangle",165);
+      note(220,t+.8,1.7,.1,"sine",440);
+      note(660,t+1.4,.75,.07,"triangle",990);
+      note(82,t+1.8,1.3,.25,"sine",41);
+    }
+    if(kind==="transition") {
+      note(58+step*5,t,1.0,.17,"sawtooth",85+step*7);
+      note(115+step*9,t+.1,.85,.14,"sine",172+step*10);
+      note(350+step*18,t+.25,.4,.045,"triangle",520+step*20);
+    }
+    if(kind==="converge") {
+      rumble(t,2.3,.32);
+      note(74,t,2.4,.34,"sawtooth",37);
+      note(55,t+.1,2.3,.42,"sine",41);
+      note(110,t+.24,1.9,.24,"triangle",220);
+      note(440,t+.55,1.5,.1,"sine",880);
+    }
+  } catch(e) { /* Audio may be unavailable in this browser. */ }
 }
 function begin(withSound) {
   if (gate.classList.contains("hidden")) return;
   audioEnabled = withSound;
   if (withSound) {
-    try { const AC=window.AudioContext||window.webkitAudioContext; if(AC) {introAudio=new AC();introAudio.resume().then(()=>soundEvent("boot")).catch(()=>{});} }
+    try { if(setupAudio()) {introAudio.resume().then(()=>soundEvent("boot")).catch(()=>{});} }
     catch(e) {audioEnabled=false;}
   }
   gate.classList.add("hidden");
@@ -247,15 +286,15 @@ async function run() {
   await phase2(); if (dead) return; await phase3();
 }
 function finish(fromSkip) {
-  if (dead && onDone === null) return; dead = true; cancelSleep.forEach((f) => f()); clearInterval(hudT); cancelAnimationFrame(raf);
+  if (dead) return; dead = true; cancelSleep.forEach((f) => f()); clearInterval(hudT); cancelAnimationFrame(raf);
   try { localStorage.setItem("aegis_intro_seen", "1"); } catch (e) {}
   const cb = onDone; onDone = null; root.classList.add("out"); tick();
   setTimeout(() => { try { if (gl) gl.getExtension("WEBGL_lose_context")?.loseContext(); } catch (e) {} root.remove(); }, 800);
   if (introAudio) { try { introAudio.close(); } catch(e) {} introAudio=null; }
-  if (cb) cb();
+  if (cb) { try { cb(); } catch(e) { console.error("AEGIS archive transition failed:",e); const boot=document.getElementById("boot"), app=document.getElementById("mainApp"); if(boot) boot.classList.add("hidden"); if(app) app.classList.remove("hidden"); } }
 }
 skip.addEventListener("click", () => finish(true));
-enter.addEventListener("click", () => finish(false));
+enter.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); finish(false); });
 addEventListener("keydown", (e) => { if (!dead && e.key === "Escape") finish(true); });
 
 window.AegisIntro = {
