@@ -242,3 +242,51 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
   box-shadow:0 0 20px rgba(255,141,70,.25),0 5px 25px rgba(0,0,0,.3) !important;
   scale:1.03 !important;
 }
+
+/* Phase 2I: side-hugging luminous brackets; no lines across labels. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  padding-left:24px !important;
+  padding-right:24px !important;
+  clip-path:polygon(0 12px,12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px)) !important;
+}
+#mainApp .archive-records .record::before,
+#mainApp .archive-records .record.featured-record::before {
+  content:"" !important;
+  position:absolute !important;
+  inset:10px auto 10px 7px !important;
+  width:12px !important;
+  height:auto !important;
+  border-left:1.5px solid rgba(255,142,79,.95) !important;
+  border-top:1.5px solid rgba(255,142,79,.95) !important;
+  border-bottom:1.5px solid rgba(255,142,79,.95) !important;
+  background:none !important;
+  clip-path:none !important;
+  z-index:1 !important;
+  opacity:.88 !important;
+  pointer-events:none !important;
+}
+#mainApp .archive-records .record::after,
+#mainApp .archive-records .record.featured-record::after {
+  content:"" !important;
+  position:absolute !important;
+  inset:10px 7px 10px auto !important;
+  width:12px !important;
+  height:auto !important;
+  border-right:1.5px solid rgba(255,142,79,.95) !important;
+  border-top:1.5px solid rgba(255,142,79,.95) !important;
+  border-bottom:1.5px solid rgba(255,142,79,.95) !important;
+  background:none !important;
+  clip-path:none !important;
+  z-index:1 !important;
+  opacity:.88 !important;
+  pointer-events:none !important;
+}
+#mainApp .archive-world {top:calc(50% - 34px) !important}
+#mainApp .archive-center {top:calc(50% - 34px) !important}
+#mainApp .archive-instructions {font-size:11px !important;letter-spacing:.075em !important;text-align:center;white-space:normal;max-width:calc(100% - 24px)}
+@media(max-width:750px){
+ #mainApp .archive-world,#mainApp .archive-center{top:calc(50% - 22px) !important}
+ #mainApp .archive-records .record{padding-left:19px !important;padding-right:19px !important}
+ #mainApp .archive-instructions{font-size:9px !important}
+}
