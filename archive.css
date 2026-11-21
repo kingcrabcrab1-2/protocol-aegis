@@ -1,0 +1,37 @@
+/* NRS Phase 2B / Observatory interface. Existing intro and API remain untouched. */
+#mainApp {position:relative; min-height:100dvh; padding:0 22px 45px; isolation:isolate}
+#mainApp .archive-toolbar {position:relative; z-index:12; display:flex; justify-content:space-between; align-items:center; padding:20px 6px; gap:12px}
+.archive-tag,.archive-count,.archive-instructions {font-size:10px;letter-spacing:.2em;color:#aa7857}
+.archive-actions{display:flex;gap:10px;align-items:center}
+.archive-actions .utility-btn{width:auto;min-width:unset;padding:9px 12px;font-size:10px}
+.archive-stage{height:min(76vh,800px);min-height:490px;position:relative;overflow:hidden;touch-action:pan-y;user-select:none;background:radial-gradient(ellipse at center,rgba(112,52,14,.14) 0%,rgba(17,13,12,.4) 35%,transparent 72%)}
+.archive-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(198,102,46,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(198,102,46,.045) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse,black 25%,transparent 78%)}
+.archive-world{position:absolute;left:50%;top:50%;width:0;height:0;transform:rotate(var(--scene-angle,0deg));transform-style:preserve-3d;pointer-events:none}
+.radar-core{position:absolute;left:-245px;top:-245px;width:490px;height:490px;border:1px solid rgba(235,121,58,.26);border-radius:50%;background:repeating-radial-gradient(circle,transparent 0 55px,rgba(239,134,70,.13) 56px 57px,transparent 58px 110px);box-shadow:0 0 65px rgba(223,94,25,.07),inset 0 0 65px rgba(223,94,25,.05)}
+.radar-core:before,.radar-core:after{content:"";position:absolute;background:rgba(222,125,63,.13)}
+.radar-core:before{height:1px;left:-18%;right:-18%;top:50%}.radar-core:after{width:1px;top:-18%;bottom:-18%;left:50%}
+.radar-sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,transparent 284deg,rgba(248,149,74,.16) 336deg,rgba(248,149,74,.04) 360deg);animation:nrsRadar 19s linear infinite}
+.radar-ring{position:absolute;border:1px dashed rgba(244,143,71,.17);border-radius:50%;inset:37px}.radar-ring.ring-two{inset:112px;border-style:solid}
+.archive-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,90%);text-align:center;pointer-events:none;z-index:2;text-shadow:0 0 16px #090909,0 0 25px #090909}
+.archive-eyebrow,.archive-subtitle{font-size:clamp(9px,1vw,12px);letter-spacing:.16em;color:#d8a17c;margin:12px 0}
+.archive-center h1{font-size:clamp(25px,3.4vw,52px);letter-spacing:.1em;line-height:1.25;margin:8px 0;color:#ffbb84;font-weight:600}
+.archive-signal{font-size:10px;letter-spacing:.18em;color:#b86f43;margin-top:30px}.archive-signal span{color:#624531}
+.archive-records{position:absolute;inset:0;pointer-events:none;display:block!important;overflow:visible!important;max-height:none!important}
+.archive-records .record{position:absolute;left:0;top:0;width:clamp(125px,15vw,205px);min-height:65px;margin:0!important;padding:12px!important;pointer-events:auto;cursor:pointer;transform:rotate(var(--orbit-angle)) translateX(var(--orbit-radius)) rotate(calc(-1 * var(--orbit-angle))) rotate(var(--scene-counter,0deg));animation:nrsFloat 6s ease-in-out infinite alternate;animation-delay:var(--float-delay);opacity:.9;background:rgba(17,14,14,.91);backdrop-filter:blur(8px);box-shadow:0 0 20px rgba(208,92,31,.09);border:1px solid rgba(234,125,65,.4);transition:border-color .2s,box-shadow .2s}
+.archive-records .record:hover{z-index:20;border-color:#ffb779;box-shadow:0 0 28px rgba(255,125,55,.32)}
+.archive-records .record-no{font-size:9px!important;letter-spacing:.08em;line-height:1.4}.archive-records .record-name{font-size:clamp(11px,1vw,14px)!important;line-height:1.4;overflow-wrap:anywhere}
+.archive-records .record[data-id]::after{pointer-events:none}
+.archive-instructions{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);white-space:nowrap}.archive-instructions span{color:#f5a268;padding:0 8px}
+.archive-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:950px;margin:0 auto 35px;position:relative;z-index:3}
+.archive-search{display:flex;gap:10px;flex:1;max-width:720px}.archive-search .search{margin:0;flex:1;min-width:0}.archive-search .select{max-width:180px}
+#mainApp footer{position:fixed!important;left:25px!important;bottom:16px!important;z-index:15!important;margin:0!important;padding:0!important;text-align:left!important;font-size:11px!important;letter-spacing:.08em;color:#bd835b;background:none!important}
+#mainApp footer::before{display:none!important}
+.admin-dock{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 30px));max-height:88dvh;overflow:auto;background:rgba(12,11,13,.98);border:1px solid rgba(231,128,64,.55);padding:22px;box-shadow:0 0 0 100vmax rgba(0,0,0,.7),0 0 65px rgba(229,108,44,.18)}
+.admin-dock-header{display:flex;align-items:center;justify-content:space-between;letter-spacing:.16em;color:#e6a577;font-size:12px;margin-bottom:15px}.admin-dock .transmit-panel{width:100%;max-width:none;min-width:0;margin:0}
+#mainApp .reader{position:fixed;inset:0;z-index:80;display:flex;justify-content:center;align-items:center;padding:25px;background:rgba(3,3,5,.73);backdrop-filter:blur(5px)}
+#mainApp .reader-box{position:relative;width:min(780px,100%);max-height:85dvh;overflow-y:auto;background:rgba(15,13,14,.98);border:1px solid rgba(245,148,78,.52);box-shadow:0 0 80px rgba(255,118,44,.13);padding:30px}
+#mainApp .hidden{display:none!important}
+@keyframes nrsRadar{to{transform:rotate(360deg)}}
+@keyframes nrsFloat{from{margin-top:-7px;filter:brightness(.88)}to{margin-top:8px;filter:brightness(1.1)}}
+@media(max-width:750px){#mainApp{padding:0 10px 42px}.archive-stage{height:66dvh;min-height:430px}.radar-core{width:330px;height:330px;left:-165px;top:-165px}.archive-records .record{--orbit-radius:200px!important;width:120px;padding:9px!important}.archive-center h1{font-size:24px}.archive-eyebrow,.archive-subtitle{font-size:8px}.archive-actions .utility-btn span{display:none}.archive-search .select{max-width:120px;font-size:10px}.archive-instructions{font-size:8px}#mainApp footer{left:14px!important}.archive-controls{padding:0 7px}.archive-records .record-name{font-size:11px!important}}
+@media(prefers-reduced-motion:reduce){.radar-sweep,.archive-records .record{animation:none!important}}

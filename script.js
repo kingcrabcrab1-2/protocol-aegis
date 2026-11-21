@@ -281,6 +281,7 @@ function renderRecords() {
   );
 
   if (!filtered.length) {
+    if ($("archiveCount")) $("archiveCount").textContent = "SIGNALS / 00";
 
     $("records").innerHTML =
       "<p class='muted'>검색 결과가 없습니다.</p>";
@@ -289,11 +290,14 @@ function renderRecords() {
 
   }
 
+  const count = $("archiveCount");
+  if (count) count.textContent = `SIGNALS / ${String(filtered.length).padStart(2, "0")}`;
+
   $("records").innerHTML =
-    filtered.map((item) => `
+    filtered.map((item, index) => `
 
       <article
-        class="record ${item.is_pinned ? "pinned" : ""}"
+        class="record ${item.is_pinned ? "pinned" : ""}" style="--orbit-angle:${(index * 137.508) % 360}deg;--orbit-radius:${235 + (index % 5)*39}px;--float-delay:${-(index % 7)*0.83}s;--depth:${index % 4};"
         data-id="${item.id}">
 
         <div class="record-no">
@@ -935,6 +939,51 @@ $("restoreFile").addEventListener("change", async (event) => {
     await loadRecords();
   } catch (e) { $("backupStatus").textContent = e.message || "복원에 실패했습니다."; }
 });
+
+// Phase 2B: spatial archive rotation. UI-only; no database or auth changes.
+(function initArchiveObservatory() {
+  const stage = document.querySelector(".archive-stage");
+  const world = $("archiveWorld");
+  const dock = $("adminDock");
+  let angle = 0, target = 0, velocity = 0, lastX = null;
+  const clampDelta = (v) => Math.max(-130, Math.min(130, v));
+  function frame() {
+    if (!$("reader").classList.contains("hidden") || !dock.classList.contains("hidden")) {
+      velocity *= .7;
+    } else {
+      target += velocity;
+      velocity *= .91;
+    }
+    angle += (target - angle) * .085;
+    world.style.setProperty("--scene-angle", `${angle}deg`);
+    world.style.setProperty("--scene-counter", `${-angle}deg`);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  stage.addEventListener("wheel", (event) => {
+    if (!$("reader").classList.contains("hidden") || !dock.classList.contains("hidden")) return;
+    event.preventDefault();
+    velocity += clampDelta(event.deltaY) * .013;
+    velocity = Math.max(-9, Math.min(9, velocity));
+  }, { passive: false });
+  stage.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" || event.target.closest(".record")) return;
+    lastX = event.clientX;
+    stage.setPointerCapture(event.pointerId);
+  });
+  stage.addEventListener("pointermove", (event) => {
+    if (lastX === null || !$("reader").classList.contains("hidden")) return;
+    const dx = event.clientX - lastX;
+    target += dx * .22;
+    lastX = event.clientX;
+  });
+  for (const name of ["pointerup", "pointercancel", "lostpointercapture"]) stage.addEventListener(name, () => { lastX = null; });
+  $("adminAccess").addEventListener("click", () => dock.classList.toggle("hidden"));
+  $("adminDockClose").addEventListener("click", () => dock.classList.add("hidden"));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !dock.classList.contains("hidden")) dock.classList.add("hidden");
+  });
+})();
 
 createAegisCursorHud();
 try {
