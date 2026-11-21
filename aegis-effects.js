@@ -328,3 +328,76 @@
   }
   new MutationObserver(onMessageState).observe(messageView,{attributes:true,attributeFilter:['class']});
 })();
+
+
+/* PHASE 6 — additive optical effects, no changes to archive state or navigation. */
+(() => {
+  'use strict';
+  const app=document.getElementById('mainApp');
+  const stage=app?.querySelector('.archive-stage');
+  const records=document.getElementById('records');
+  const reader=document.getElementById('reader');
+  const box=reader?.querySelector('.reader-box');
+  const core=stage?.querySelector('.radar-core');
+  if(!app||!stage||!records||!reader||!box||!core)return;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const mobile=matchMedia('(max-width: 750px)');
+  const running=()=>!reduced.matches&&!document.hidden&&!app.classList.contains('hidden');
+  const optical=document.createElement('i');optical.className='nrs-p6-optical';optical.setAttribute('aria-hidden','true');box.append(optical);
+  const circuit=document.createElement('i');circuit.className='nrs-p6-circuit';circuit.setAttribute('aria-hidden','true');box.append(circuit);
+  const expansion=document.createElement('i');expansion.className='nrs-p6-expansion';expansion.setAttribute('aria-hidden','true');stage.append(expansion);
+  let readerTimer=0,expansionTimer=0,reconnectTimer=0,lastInteraction=performance.now(),idle=false;
+  const replay=(el,cls)=>{el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);};
+  const clearReader=()=>{clearTimeout(readerTimer);optical.classList.remove('active');circuit.classList.remove('active');};
+  // Observe only open/close class transitions; leave decryption and authentication stamp untouched.
+  let wasOpen=!reader.classList.contains('hidden');
+  new MutationObserver(()=>{
+    const open=!reader.classList.contains('hidden');
+    if(open===wasOpen)return;wasOpen=open;
+    clearReader();
+    if(open&&running()){
+      replay(optical,'active');replay(circuit,'active');
+      readerTimer=setTimeout(clearReader,1250);
+    }
+  }).observe(reader,{attributes:true,attributeFilter:['class']});
+  // Single delegated listener supports cards added by search, pagination, and live data updates.
+  let hoverCard=null,hoverPending=false,hoverX=50,hoverY=50;
+  records.addEventListener('pointermove',event=>{
+    if(!running()||mobile.matches||event.pointerType==='touch')return;
+    const card=event.target.closest('.record');if(!card)return;
+    const rect=card.getBoundingClientRect();hoverCard=card;
+    hoverX=Math.max(0,Math.min(100,(event.clientX-rect.left)/Math.max(1,rect.width)*100));
+    hoverY=Math.max(0,Math.min(100,(event.clientY-rect.top)/Math.max(1,rect.height)*100));
+    if(hoverPending)return;hoverPending=true;
+    requestAnimationFrame(()=>{hoverPending=false;if(!hoverCard?.isConnected)return;
+      hoverCard.style.setProperty('--nrs-p6-x',hoverX+'%');hoverCard.style.setProperty('--nrs-p6-y',hoverY+'%');
+    });
+  },{passive:true});
+  records.addEventListener('pointerout',event=>{
+    const card=event.target.closest('.record');
+    if(card&&!card.contains(event.relatedTarget)){card.style.removeProperty('--nrs-p6-x');card.style.removeProperty('--nrs-p6-y');if(hoverCard===card)hoverCard=null;}
+  },{passive:true});
+  // The core is already present. No pointer blocking and no alteration of its normal behavior.
+  core.addEventListener('click',()=>{
+    if(!running()||mobile.matches||!reader.classList.contains('hidden'))return;
+    replay(expansion,'active');clearTimeout(expansionTimer);
+    expansionTimer=setTimeout(()=>expansion.classList.remove('active'),1100);
+  });
+  // Reconnect after genuine idle time, not on every movement. Ignore mobile and reader state.
+  const reconnect=()=>{
+    const now=performance.now();
+    if(!idle&&now-lastInteraction>60000)idle=true;
+    if(idle&&running()&&!mobile.matches&&reader.classList.contains('hidden')){
+      replay(core,'nrs-p6-reconnect');clearTimeout(reconnectTimer);
+      reconnectTimer=setTimeout(()=>core.classList.remove('nrs-p6-reconnect'),950);
+    }
+    idle=false;lastInteraction=now;
+  };
+  ['pointerdown','keydown','wheel'].forEach(type=>document.addEventListener(type,reconnect,{passive:true}));
+  // Throttle pointer movement to avoid per-frame work while still detecting resumed activity.
+  let lastPointer=0;
+  document.addEventListener('pointermove',()=>{
+    const now=performance.now();if(now-lastPointer<800)return;lastPointer=now;reconnect();
+  },{passive:true});
+  document.addEventListener('visibilitychange',()=>{lastInteraction=performance.now();idle=false;});
+})();
