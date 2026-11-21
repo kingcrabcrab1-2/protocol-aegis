@@ -116,3 +116,12 @@
 @keyframes nrsFilmDrift{to{background-position:0 40px}}
 @media(max-width:700px){.nrs-terminal{width:calc(100vw - 44px);height:68vh}.nrs-line{font-size:10px;letter-spacing:0}.nrs-status{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.nrs-film,.nrs-sweep,.nrs-line{animation:none!important}}
+/* NRS / computational collapse — layered readout and original signal sculpture */
+.nrs-cinema{background:#050506}
+.nrs-cinema-canvas{image-rendering:auto}
+.nrs-terminal{z-index:3;width:min(510px,43vw);height:min(76vh,720px);padding:16px 22px 18px 0;background:linear-gradient(90deg,rgba(4,4,6,.79) 0%,rgba(4,4,6,.54) 74%,transparent 100%)}
+.nrs-terminal-head{font-size:clamp(10px,.95vw,12px);letter-spacing:.15em}
+.nrs-line{font-size:clamp(10px,1vw,13px);line-height:1.65;letter-spacing:.025em}
+.nrs-film{opacity:.13;mix-blend-mode:multiply}
+.nrs-sweep{opacity:.48}
+@media(max-width:700px){.nrs-terminal{width:min(78vw,340px);height:64vh;left:16px;top:26px;padding-right:12px;background:linear-gradient(90deg,rgba(4,4,6,.85),rgba(4,4,6,.35) 82%,transparent)}.nrs-line{font-size:9px}.nrs-terminal-head{font-size:9px}}
