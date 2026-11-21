@@ -795,3 +795,42 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
 @media (prefers-reduced-motion:reduce) {
   #mainApp .reader-box::after {animation:none !important;opacity:1 !important}
 }
+
+/* Phase 2M: relay indicator removed from document flow entirely.
+   Blink opacity only; it cannot change the reader's scroll height. */
+#mainApp .reader-box {
+  padding-bottom: 104px !important;
+  box-sizing: border-box !important;
+}
+#mainApp .reader-box::after {
+  position: absolute !important;
+  inset: auto 44px 28px 44px !important;
+  display: block !important;
+  width: auto !important;
+  height: 26px !important;
+  min-height: 0 !important;
+  max-height: 26px !important;
+  margin: 0 !important;
+  padding: 6px 0 0 !important;
+  box-sizing: border-box !important;
+  line-height: 16px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  overflow-wrap: normal !important;
+  text-overflow: ellipsis !important;
+  transform: none !important;
+  transition: none !important;
+  animation: nrsRelayBlinkStable 3s steps(1,end) infinite !important;
+}
+@media (max-width: 750px) {
+  #mainApp .reader-box { padding-bottom: 94px !important; }
+  #mainApp .reader-box::after {
+    inset: auto 20px 24px 20px !important;
+    height: 24px !important;
+    min-height: 0 !important;
+    max-height: 24px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #mainApp .reader-box::after { animation: none !important; opacity: 1 !important; }
+}
