@@ -3,6 +3,10 @@ let adminPassword = "";
 let currentRecord = null;
 let soundOn = true;
 let allRecords = [];
+let typeToken = 0;
+let readerSession = 0;
+let editing = false;
+let saving = false;
 
 
 
@@ -108,7 +112,8 @@ async function api(path, options = {}) {
 async function typeLines(
   target,
   lines,
-  delay = 120
+  delay = 120,
+  isCurrent = () => true
 ) {
 
   target.textContent = "";
@@ -117,6 +122,7 @@ async function typeLines(
 
     for (const ch of line) {
 
+      if (!isCurrent()) return;
       target.textContent += ch;
 
       if (
@@ -131,6 +137,7 @@ async function typeLines(
 
     }
 
+    if (!isCurrent()) return;
     target.textContent += "\n";
 
     await wait(delay);
@@ -140,10 +147,14 @@ async function typeLines(
 }
 async function typeMessage(target, text) {
 
+  const token = ++typeToken;
+
   target.textContent = "";
   target.classList.add("typing");
 
   for (const ch of String(text ?? "")) {
+
+    if (token !== typeToken) return;
 
     target.textContent += ch;
 
@@ -160,11 +171,11 @@ async function typeMessage(target, text) {
 
   }
 
-  target.classList.remove("typing");
+  if (token === typeToken) target.classList.remove("typing");
 
 }
 
-async function bootSequence() {
+async function bootSequence(short = false) {
 
   $("soundToggle").textContent =
     soundOn
@@ -173,7 +184,7 @@ async function bootSequence() {
 
   const lines = [
 
-    "N.E.R.S.A. U.S. MAIN FACILITY",
+    "NRS U.S. MAIN FACILITY",
     "GARDINERS ISLAND / ARCHIVED TERMINAL",
     "",
     "PROTOCOL : AEGIS",
@@ -190,6 +201,8 @@ async function bootSequence() {
 
   ];
 
+  if (short) lines.splice(0, 8);
+
   let out = "";
 
   for (let i = 0; i < lines.length; i++) {
@@ -205,11 +218,11 @@ async function bootSequence() {
 
     play("clickSound");
 
-    await wait(i < 4 ? 180 : 120);
+    await wait(short ? 70 : i < 4 ? 180 : 120);
 
   }
 
-  await wait(500);
+  await wait(short ? 250 : 500);
 
   $("boot").classList.add("hidden");
   $("mainApp").classList.remove("hidden");
@@ -242,6 +255,8 @@ async function loadRecords() {
 }
 
 function renderRecords() {
+  // Remove previously detached priority cards before refreshing filtered results.
+  document.querySelectorAll(".archive-stage > .featured-record").forEach((node) => node.remove());
 
   const keyword =
     $("searchInput")
@@ -249,8 +264,7 @@ function renderRecords() {
       .trim()
       .toLowerCase();
 
-  const asc =
-    $("sortSelect").value === "asc";
+  const asc = true;
 
   let filtered =
     allRecords.filter((item) =>
@@ -263,8 +277,8 @@ function renderRecords() {
 
   filtered.sort((a, b) =>
 
-    a.is_pinned !== b.is_pinned
-      ? Number(b.is_pinned) - Number(a.is_pinned)
+    (a.is_protected | a.is_pinned) !== (b.is_protected | b.is_pinned)
+      ? (b.is_protected | b.is_pinned) - (a.is_protected | a.is_pinned)
       : asc
         ? a.id - b.id
         : b.id - a.id
@@ -272,6 +286,7 @@ function renderRecords() {
   );
 
   if (!filtered.length) {
+    if ($("archiveCount")) $("archiveCount").textContent = "SIGNALS / 00";
 
     $("records").innerHTML =
       "<p class='muted'>검색 결과가 없습니다.</p>";
@@ -280,19 +295,24 @@ function renderRecords() {
 
   }
 
+  const count = $("archiveCount");
+  if (count) count.textContent = `SIGNALS / ${String(filtered.length).padStart(2, "0")}`;
+
   $("records").innerHTML =
-    filtered.map((item) => `
+    filtered.map((item, index) => `
 
       <article
-        class="record ${item.is_pinned ? "pinned" : ""}"
+        class="record ${item.is_pinned ? "pinned" : ""} ${item.id === 1 || /신지안/.test(item.team_name || "") ? "featured-record" : ""}" style="--float-delay:${-(index % 7)*0.83}s;"
         data-id="${item.id}">
 
         <div class="record-no">
           TIME LINE #${timelineNo(item.id)}
           ${
-            item.is_pinned
-              ? "<span class='pin-label'>★ FIXED</span>"
-              : ""
+            item.is_protected
+              ? "<span class='pin-label'>◆ PRIORITY ARCHIVE</span>"
+              : item.is_pinned
+                ? "<span class='pin-label'>★ FIXED</span>"
+                : ""
           }
         </div>
 
@@ -303,6 +323,31 @@ function renderRecords() {
       </article>
 
     `).join("");
+
+  // Phase 2I layout: wider, slightly higher signal field. Keep all records
+  // attached to the rotating world, and preserve the separate priority orbit.
+  const stage = document.querySelector(".archive-stage");
+  const stageWidth = stage.clientWidth;
+  const stageHeight = stage.clientHeight;
+  const regular = [...$("records").querySelectorAll(".record")];
+  const ordinary = regular.filter(node => !node.classList.contains("featured-record"));
+  const safeRadius = Math.max(145, Math.min(stageWidth * .39, stageHeight * .5 - 92));
+  const verticalLift = Math.min(48, stageHeight * .055);
+  ordinary.forEach((node, i) => {
+    const a = i * 2.399963229728653 + .45;
+    const layer = i % 4;
+    const radius = safeRadius * [.78, .89, .98, 1.07][layer];
+    node.style.setProperty("--pos-x", `${Math.cos(a) * radius}px`);
+    node.style.setProperty("--pos-y", `${Math.sin(a) * radius - verticalLift}px`);
+    node.style.setProperty("--card-scale", `${[.88, 1, .93, 1.06][layer]}`);
+  });
+  regular.filter(node => node.classList.contains("featured-record")).forEach((node, i) => {
+    const a = Math.PI + .20 + i * .18;
+    const radius = safeRadius * 1.18;
+    node.style.setProperty("--pos-x", `${Math.cos(a) * radius}px`);
+    node.style.setProperty("--pos-y", `${Math.sin(a) * radius - verticalLift}px`);
+    node.style.setProperty("--card-scale", ".99");
+  });
 
   document
     .querySelectorAll(".record")
@@ -323,67 +368,70 @@ function renderRecords() {
     });
 
 }
-async function openReader(record) {
+function closeReader() {
+  if (editing || saving) return;
+  ++readerSession;
+  ++typeToken;
+  exitEditMode();
+  $("reader").classList.add("hidden");
+  $("decrypt").textContent = "";
+  $("viewMessage").textContent = "";
+  $("viewMessage").classList.remove("typing");
+  currentRecord = null;
+}
 
+async function openReader(record) {
   if (!record) return;
 
+  // Every opening gets its own session. Old decrypt animations cannot
+  // update a newer record after quick successive clicks.
+  const session = ++readerSession;
+  ++typeToken;
+  exitEditMode();
   currentRecord = record;
 
-  $("reader").classList.remove("hidden");
+  // Populate the selected record's identity BEFORE revealing the reader.
+  const identity = record.team_name || "NRS / INTER-TIMELINE MESSAGE";
+  $("readerIdentity").textContent = identity;
+  $("viewTitle").textContent = identity;
+  $("viewMeta").textContent = `RECEIVED / TIME LINE #${timelineNo(record.id)}`;
+  $("viewMessage").textContent = "";
+  $("viewMessage").classList.remove("typing");
+  $("pinButton").textContent = record.is_pinned ? "고정 해제" : "고정";
+  $("adminTools").classList.toggle("hidden", !adminMode);
 
   $("messageView").classList.add("hidden");
+  $("decrypt").textContent = "";
   $("decrypt").classList.remove("hidden");
+  $("reader").classList.remove("hidden");
 
   await typeLines(
-
     $("decrypt"),
-
-    [
-      "SIGNAL RECEIVED...",
-      "Decrypting...",
-      "Synchronization Complete."
-    ],
-
-    210
-
+    ["SIGNAL RECEIVED...", "Decrypting...", "Synchronization Complete."],
+    210,
+    () => session === readerSession
   );
-
+  if (session !== readerSession) return;
   await wait(260);
+  if (session !== readerSession) return;
 
   $("decrypt").classList.add("hidden");
   $("messageView").classList.remove("hidden");
-
-  $("viewMeta").textContent =
-    `RECEIVED / TIME LINE #${timelineNo(record.id)}`;
-
-  $("viewTitle").textContent =
-    record.team_name;
-
-  $("pinButton").textContent =
-    record.is_pinned
-      ? "고정 해제"
-      : "고정";
-
-  $("adminTools").classList.toggle(
-    "hidden",
-    !adminMode
-  );
-
-  await typeMessage(
-    $("viewMessage"),
-    record.message
-  );
-
+  await typeMessage($("viewMessage"), record.message);
 }
 
-$("readerClose").addEventListener(
-  "click",
-  () => {
+$("readerClose").addEventListener("click", closeReader);
 
-    $("reader").classList.add("hidden");
+// Click only the overlay itself, never its inner reader panel.
+$("reader").addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) closeReader();
+});
 
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !$("reader").classList.contains("hidden")) {
+    if (!editing && !saving) closeReader();
   }
-);
+});
 
 $("adminToggle").addEventListener(
   "click",
@@ -391,6 +439,7 @@ $("adminToggle").addEventListener(
 
     if (adminMode) {
 
+      exitEditMode();
       adminMode = false;
       adminPassword = "";
 
@@ -472,10 +521,12 @@ $("sendButton").addEventListener(
   "click",
   async () => {
 
-    const team_name =
-      $("teamName")
-        .value
-        .trim() || "UNKNOWN TIMELINE";
+    const team_number = $("teamNumber").value.replace(/\D/g, "");
+    const author_name = $("authorName").value.trim();
+    if (!author_name) {
+      $("sendStatus").textContent = "이름을 입력해 주세요.";
+      return;
+    }
 
     const message =
       $("messageText")
@@ -501,7 +552,8 @@ $("sendButton").addEventListener(
         {
           method: "POST",
           body: JSON.stringify({
-            team_name,
+            team_number,
+            author_name,
             message
           })
         }
@@ -510,6 +562,7 @@ $("sendButton").addEventListener(
       play("sendSound");
 
       $("messageText").value = "";
+      $("authorName").value = "";
 
       $("sendStatus").textContent =
         "등록 완료.";
@@ -525,43 +578,127 @@ $("sendButton").addEventListener(
 
   }
 );
-$("editButton").addEventListener(
-  "click",
-  async () => {
+// ---------- 인라인 메시지 수정 ----------
+function exitEditMode() {
 
-    if (!currentRecord) return;
+  editing = false;
+  saving = false;
 
-    const message = prompt(
-      "수정할 메시지를 입력하세요.",
-      currentRecord.message
-    );
+  $("editMessage").classList.add("hidden");
+  $("editTools").classList.add("hidden");
+  $("editStatus").textContent = "";
+  $("viewMessage").classList.remove("hidden");
+  $("adminTools").classList.toggle("hidden", !adminMode || !currentRecord);
 
-    if (message === null) return;
+}
 
-    try {
+function enterEditMode() {
 
-      await api(
-        `/api/messages/${currentRecord.id}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            message
-          })
-        }
-      );
+  if (!currentRecord || !adminMode || editing) return;
 
-      $("reader").classList.add("hidden");
+  // 타이핑 연출 중이면 즉시 전체 본문으로 확정
+  typeToken++;
 
-      await loadRecords();
+  const view = $("viewMessage");
+  view.classList.remove("typing");
+  view.textContent = currentRecord.message;
 
-    } catch (e) {
+  // 본문 영역과 같은 높이로 고정 → 창 크기/위치 변화 없음
+  const area = $("editMessage");
+  const height = view.offsetHeight;
 
-      alert(e.message);
+  area.value = currentRecord.message;
+  area.style.height = `${height}px`;
 
-    }
+  view.classList.add("hidden");
+  area.classList.remove("hidden");
+  $("adminTools").classList.add("hidden");
+  $("editTools").classList.remove("hidden");
+  $("editStatus").textContent = "";
+  $("saveEditButton").disabled = false;
+  $("cancelEditButton").disabled = false;
+
+  editing = true;
+
+  area.focus();
+  area.setSelectionRange(area.value.length, area.value.length);
+
+}
+
+async function saveEdit() {
+
+  if (!editing || saving || !currentRecord) return;
+
+  const area = $("editMessage");
+  const text = area.value.trim();
+  const original = String(currentRecord.message).replace(/\r\n/g, "\n").trim();
+
+  if (!text) {
+    $("editStatus").textContent = "메시지를 입력해 주세요.";
+    return;
+  }
+
+  // 변경이 없으면 서버 호출 없이 종료 (원본 줄바꿈 보존)
+  if (text === original) {
+    exitEditMode();
+    return;
+  }
+
+  saving = true;
+  $("saveEditButton").disabled = true;
+  $("cancelEditButton").disabled = true;
+  $("editStatus").textContent = "TRANSMITTING...";
+
+  try {
+
+    await api(`/api/messages/${currentRecord.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ message: text })
+    });
+
+    currentRecord.message = text;
+
+    const item = allRecords.find((r) => r.id === currentRecord.id);
+    if (item) item.message = text;
+
+    $("viewMessage").textContent = text;
+    exitEditMode();
+    renderRecords();
+
+  } catch (e) {
+
+    // 실패 시 입력 내용 유지
+    saving = false;
+    $("saveEditButton").disabled = false;
+    $("cancelEditButton").disabled = false;
+    $("editStatus").textContent = e.message || "저장에 실패했습니다.";
+    area.focus();
 
   }
-);
+
+}
+
+$("editButton").addEventListener("click", enterEditMode);
+$("saveEditButton").addEventListener("click", saveEdit);
+
+$("cancelEditButton").addEventListener("click", () => {
+
+  if (saving) return;
+  exitEditMode();
+
+});
+
+$("editMessage").addEventListener("keydown", (event) => {
+
+  if (event.key === "Escape") {
+    event.stopPropagation();
+    if (!saving) exitEditMode();
+  } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+    event.preventDefault();
+    saveEdit();
+  }
+
+});
 
 $("deleteButton").addEventListener(
   "click",
@@ -646,10 +783,7 @@ $("searchInput").addEventListener(
   renderRecords
 );
 
-$("sortSelect").addEventListener(
-  "change",
-  renderRecords
-);
+
 // 최초 실행
 function createAegisCursorHud() {
 
@@ -804,5 +938,85 @@ $("backupButton").addEventListener(
 
   }
 );
+$("protectButton").addEventListener("click", async () => {
+  if (!currentRecord) return;
+  const on = !currentRecord.is_protected;
+  let confirmText;
+  if (!on) {
+    confirmText = prompt("보호 해제: RELEASE 를 입력하세요.");
+    if (confirmText !== "RELEASE") return;
+  }
+  try {
+    await api("/api/admin/protect", { method: "POST", body: JSON.stringify({ id: currentRecord.id, protected: on, confirm: confirmText }) });
+    $("reader").classList.add("hidden");
+    await loadRecords();
+  } catch (e) { alert(e.message); }
+});
+
+$("restoreButton").addEventListener("click", () => $("restoreFile").click());
+$("restoreFile").addEventListener("change", async (event) => {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (data.protocol !== "AEGIS" || !Array.isArray(data.messages)) throw new Error("AEGIS 백업 파일이 아닙니다.");
+    if (!confirm(`${data.messages.length}건을 병합 복원합니다. (기존 기록은 삭제·덮어쓰지 않음) 진행할까요?`)) return;
+    const r = await api("/api/admin/restore", { method: "POST", body: JSON.stringify({ messages: data.messages }) });
+    $("backupStatus").textContent = `복원 완료: ${r.added}건 추가, ${r.skipped}건 건너뜀`;
+    await loadRecords();
+  } catch (e) { $("backupStatus").textContent = e.message || "복원에 실패했습니다."; }
+});
+
+// Phase 2B: spatial archive rotation. UI-only; no database or auth changes.
+(function initArchiveObservatory() {
+  const stage = document.querySelector(".archive-stage");
+  const world = $("archiveWorld");
+  const dock = $("adminDock");
+  let angle = 0, target = 0, velocity = 0, lastX = null;
+  const clampDelta = (v) => Math.max(-130, Math.min(130, v));
+  function frame() {
+    if (!$("reader").classList.contains("hidden") || !dock.classList.contains("hidden")) {
+      velocity *= .7;
+    } else {
+      target += velocity + (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : .022);
+      velocity *= .91;
+    }
+    angle += (target - angle) * .085;
+    world.style.setProperty("--scene-angle", `${angle}deg`);
+    world.style.setProperty("--scene-counter", `${-angle}deg`);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  stage.addEventListener("wheel", (event) => {
+    if (!$("reader").classList.contains("hidden") || !dock.classList.contains("hidden")) return;
+    event.preventDefault();
+    velocity += clampDelta(event.deltaY) * .013;
+    velocity = Math.max(-9, Math.min(9, velocity));
+  }, { passive: false });
+  stage.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" || event.target.closest(".record")) return;
+    lastX = event.clientX;
+    stage.setPointerCapture(event.pointerId);
+  });
+  stage.addEventListener("pointermove", (event) => {
+    if (lastX === null || !$("reader").classList.contains("hidden")) return;
+    const dx = event.clientX - lastX;
+    target += dx * .22;
+    lastX = event.clientX;
+  });
+  for (const name of ["pointerup", "pointercancel", "lostpointercapture"]) stage.addEventListener(name, () => { lastX = null; });
+  $("adminAccess").addEventListener("click", () => dock.classList.toggle("hidden"));
+  $("adminDockClose").addEventListener("click", () => dock.classList.add("hidden"));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !dock.classList.contains("hidden")) dock.classList.add("hidden");
+  });
+})();
+
 createAegisCursorHud();
-bootSequence();
+try {
+  if (window.AegisIntro) window.AegisIntro.start(() => bootSequence(false));
+  else bootSequence();
+} catch (e) {
+  bootSequence();
+}

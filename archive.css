@@ -1,0 +1,355 @@
+/* NRS Phase 2B / Observatory interface. Existing intro and API remain untouched. */
+#mainApp {position:relative; min-height:100dvh; padding:0 22px 45px; isolation:isolate}
+#mainApp .archive-toolbar {position:relative; z-index:12; display:flex; justify-content:space-between; align-items:center; padding:20px 6px; gap:12px}
+.archive-tag,.archive-count,.archive-instructions {font-size:10px;letter-spacing:.2em;color:#aa7857}
+.archive-actions{display:flex;gap:10px;align-items:center}
+.archive-actions .utility-btn{width:auto;min-width:unset;padding:9px 12px;font-size:10px}
+.archive-stage{height:min(76vh,800px);min-height:490px;position:relative;overflow:hidden;touch-action:pan-y;user-select:none;background:radial-gradient(ellipse at center,rgba(112,52,14,.14) 0%,rgba(17,13,12,.4) 35%,transparent 72%)}
+.archive-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(198,102,46,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(198,102,46,.045) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse,black 25%,transparent 78%)}
+.archive-world{position:absolute;left:50%;top:50%;width:0;height:0;transform:rotate(var(--scene-angle,0deg));transform-style:preserve-3d;pointer-events:none}
+.radar-core{position:absolute;left:-245px;top:-245px;width:490px;height:490px;border:1px solid rgba(235,121,58,.26);border-radius:50%;background:repeating-radial-gradient(circle,transparent 0 55px,rgba(239,134,70,.13) 56px 57px,transparent 58px 110px);box-shadow:0 0 65px rgba(223,94,25,.07),inset 0 0 65px rgba(223,94,25,.05)}
+.radar-core:before,.radar-core:after{content:"";position:absolute;background:rgba(222,125,63,.13)}
+.radar-core:before{height:1px;left:-18%;right:-18%;top:50%}.radar-core:after{width:1px;top:-18%;bottom:-18%;left:50%}
+.radar-sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,transparent 284deg,rgba(248,149,74,.16) 336deg,rgba(248,149,74,.04) 360deg);animation:nrsRadar 19s linear infinite}
+.radar-ring{position:absolute;border:1px dashed rgba(244,143,71,.17);border-radius:50%;inset:37px}.radar-ring.ring-two{inset:112px;border-style:solid}
+.archive-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,90%);text-align:center;pointer-events:none;z-index:2;text-shadow:0 0 16px #090909,0 0 25px #090909}
+.archive-eyebrow,.archive-subtitle{font-size:clamp(9px,1vw,12px);letter-spacing:.16em;color:#d8a17c;margin:12px 0}
+.archive-center h1{font-size:clamp(25px,3.4vw,52px);letter-spacing:.1em;line-height:1.25;margin:8px 0;color:#ffbb84;font-weight:600}
+.archive-signal{font-size:10px;letter-spacing:.18em;color:#b86f43;margin-top:30px}.archive-signal span{color:#624531}
+.archive-records{position:absolute;inset:0;pointer-events:none;display:block!important;overflow:visible!important;max-height:none!important}
+.archive-records .record{position:absolute;left:0;top:0;width:clamp(125px,15vw,205px);min-height:65px;margin:0!important;padding:12px!important;pointer-events:auto;cursor:pointer;transform:rotate(var(--orbit-angle)) translateX(var(--orbit-radius)) rotate(calc(-1 * var(--orbit-angle))) rotate(var(--scene-counter,0deg));animation:nrsFloat 6s ease-in-out infinite alternate;animation-delay:var(--float-delay);opacity:.9;background:rgba(17,14,14,.91);backdrop-filter:blur(8px);box-shadow:0 0 20px rgba(208,92,31,.09);border:1px solid rgba(234,125,65,.4);transition:border-color .2s,box-shadow .2s}
+.archive-records .record:hover{z-index:20;border-color:#ffb779;box-shadow:0 0 28px rgba(255,125,55,.32)}
+.archive-records .record-no{font-size:9px!important;letter-spacing:.08em;line-height:1.4}.archive-records .record-name{font-size:clamp(11px,1vw,14px)!important;line-height:1.4;overflow-wrap:anywhere}
+.archive-records .record[data-id]::after{pointer-events:none}
+.archive-instructions{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);white-space:nowrap}.archive-instructions span{color:#f5a268;padding:0 8px}
+.archive-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:950px;margin:0 auto 35px;position:relative;z-index:3}
+.archive-search{display:flex;gap:10px;flex:1;max-width:720px}.archive-search .search{margin:0;flex:1;min-width:0}.archive-search .select{max-width:180px}
+#mainApp footer{position:fixed!important;left:25px!important;bottom:16px!important;z-index:15!important;margin:0!important;padding:0!important;text-align:left!important;font-size:11px!important;letter-spacing:.08em;color:#bd835b;background:none!important}
+#mainApp footer::before{display:none!important}
+.admin-dock{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 30px));max-height:88dvh;overflow:auto;background:rgba(12,11,13,.98);border:1px solid rgba(231,128,64,.55);padding:22px;box-shadow:0 0 0 100vmax rgba(0,0,0,.7),0 0 65px rgba(229,108,44,.18)}
+.admin-dock-header{display:flex;align-items:center;justify-content:space-between;letter-spacing:.16em;color:#e6a577;font-size:12px;margin-bottom:15px}.admin-dock .transmit-panel{width:100%;max-width:none;min-width:0;margin:0}
+#mainApp .reader{position:fixed;inset:0;z-index:80;display:flex;justify-content:center;align-items:center;padding:25px;background:rgba(3,3,5,.73);backdrop-filter:blur(5px)}
+#mainApp .reader-box{position:relative;width:min(780px,100%);max-height:85dvh;overflow-y:auto;background:rgba(15,13,14,.98);border:1px solid rgba(245,148,78,.52);box-shadow:0 0 80px rgba(255,118,44,.13);padding:30px}
+#mainApp .hidden{display:none!important}
+@keyframes nrsRadar{to{transform:rotate(360deg)}}
+@keyframes nrsFloat{from{margin-top:-7px;filter:brightness(.88)}to{margin-top:8px;filter:brightness(1.1)}}
+@media(max-width:750px){#mainApp{padding:0 10px 42px}.archive-stage{height:66dvh;min-height:430px}.radar-core{width:330px;height:330px;left:-165px;top:-165px}.archive-records .record{--orbit-radius:200px!important;width:120px;padding:9px!important}.archive-center h1{font-size:24px}.archive-eyebrow,.archive-subtitle{font-size:8px}.archive-actions .utility-btn span{display:none}.archive-search .select{max-width:120px;font-size:10px}.archive-instructions{font-size:8px}#mainApp footer{left:14px!important}.archive-controls{padding:0 7px}.archive-records .record-name{font-size:11px!important}}
+@media(prefers-reduced-motion:reduce){.radar-sweep,.archive-records .record{animation:none!important}}
+
+/* Phase 2C: luminous deep-space relay, wide spatial signals and fixed priority record */
+#mainApp.shell {max-width:none}
+.shell:has(#mainApp:not(.hidden)){width:min(1760px,calc(100% - 24px));max-width:none}
+#mainApp{padding:0 16px 48px}
+.archive-stage{height:min(79dvh,850px);min-height:590px;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 48% 55% at 50% 49%,rgba(196,113,60,.22) 0%,rgba(77,89,108,.13) 40%,rgba(23,33,49,.14) 66%,rgba(9,11,18,.12) 100%)}
+.archive-galaxy{position:absolute;inset:-40%;z-index:-1;pointer-events:none;opacity:.65;filter:blur(35px) saturate(.8);background:radial-gradient(ellipse 28% 11% at 50% 50%,rgba(243,169,114,.22),transparent 75%),radial-gradient(ellipse 40% 16% at 50% 50%,rgba(96,151,185,.18) 0%,rgba(194,117,80,.1) 43%,transparent 80%),radial-gradient(ellipse 35% 8% at 51% 49%,rgba(164,191,217,.15),transparent 85%);transform:rotate(-24deg);animation:galaxyDrift 240s linear infinite}
+.archive-galaxy:after{content:"";position:absolute;inset:13%;border-radius:50%;background:repeating-conic-gradient(from 22deg,transparent 0deg,rgba(150,184,206,.04) 11deg,transparent 22deg,rgba(238,163,112,.045) 35deg,transparent 49deg);filter:blur(45px)}
+@keyframes galaxyDrift{from{transform:rotate(-24deg) scale(1)}to{transform:rotate(336deg) scale(1.06)}}
+.archive-grid{opacity:.5}
+.radar-core{border-color:rgba(255,166,103,.37);box-shadow:0 0 110px rgba(235,127,65,.13),0 0 150px rgba(115,159,194,.08),inset 0 0 85px rgba(229,131,66,.08)}
+.archive-center{text-shadow:0 0 25px rgba(10,10,17,.95),0 0 48px rgba(12,13,20,.95)}
+.archive-center h1{color:#ffd0a1;text-shadow:0 0 32px rgba(248,139,68,.4)}
+.archive-eyebrow,.archive-subtitle{color:#efb78e}
+.archive-records .record{transform:translate(var(--pos-x,0px),var(--pos-y,0px)) rotate(var(--scene-counter,0deg)) scale(var(--card-scale,1));width:clamp(145px,12vw,210px);opacity:.95;background:rgba(16,21,29,.86);border-color:rgba(244,155,99,.55);box-shadow:0 0 26px rgba(243,143,81,.12);transition:border-color .25s,box-shadow .25s,background .25s,scale .25s;will-change:transform}
+.archive-records .record:hover,.archive-records .record:focus-visible{z-index:40;scale:1.14;border-color:#ffcb93;background:rgba(33,33,40,.98);box-shadow:0 0 12px rgba(255,178,105,.6),0 0 45px rgba(255,137,64,.34),inset 0 0 15px rgba(255,165,97,.1);opacity:1}
+.archive-stage>.featured-record{position:absolute;right:5.5%;top:calc(9% + var(--featured-offset,0px));left:auto;z-index:8;width:clamp(210px,17vw,285px);min-height:94px;padding:17px!important;background:linear-gradient(135deg,rgba(54,35,30,.96),rgba(21,28,40,.95));border:1px solid rgba(255,188,119,.82);box-shadow:0 0 28px rgba(255,157,83,.23),inset 0 0 30px rgba(252,155,87,.06);cursor:pointer;animation:featuredBreathe 7s ease-in-out infinite;transition:scale .25s,border-color .25s,box-shadow .25s}
+.archive-stage>.featured-record .record-name{font-size:clamp(13px,1.1vw,17px)!important;color:#ffe0bf}
+.archive-stage>.featured-record:hover,.archive-stage>.featured-record:focus-visible{scale:1.09;border-color:#ffe1ad;box-shadow:0 0 18px rgba(255,180,105,.65),0 0 48px rgba(255,143,67,.32)}
+@keyframes featuredBreathe{50%{box-shadow:0 0 42px rgba(255,157,83,.33),inset 0 0 30px rgba(252,155,87,.08)}}
+#mainApp footer{left:50%!important;right:auto!important;transform:translateX(-50%);text-align:center!important;bottom:19px!important;color:#e8b48c!important;text-shadow:0 0 14px rgba(255,165,91,.32);font-size:12px!important;letter-spacing:.12em}
+@media(max-width:750px){.shell:has(#mainApp:not(.hidden)){width:calc(100% - 8px)}#mainApp{padding:0 4px 44px}.archive-stage{height:72dvh;min-height:470px}.archive-records .record{width:118px;min-height:55px;padding:8px!important}.archive-stage>.featured-record{right:3%;top:5%;width:160px;min-height:70px;padding:10px!important}.archive-stage>.featured-record .record-name{font-size:12px!important}.archive-center{width:85%}.archive-center h1{font-size:23px}#mainApp footer{left:50%!important}}
+@media(prefers-reduced-motion:reduce){.archive-galaxy,.archive-stage>.featured-record{animation:none!important}}
+
+/* Phase 2D: unobstructed signals, rotating galactic backdrop, inline search and NRS reader */
+#mainApp{padding-bottom:44px}
+#mainApp .archive-toolbar{padding:18px 14px 12px;align-items:center}
+.archive-heading{display:flex;align-items:center;gap:24px;min-width:0;flex:1}
+.archive-top-search{width:clamp(170px,24vw,330px)!important;min-width:0!important;height:31px!important;margin:0!important;padding:5px 12px!important;font-size:11px!important;background:rgba(12,17,25,.73)!important;border:1px solid rgba(255,166,105,.36)!important;color:#f0c8a8!important}
+.archive-top-search:focus{border-color:#ffb880!important;box-shadow:0 0 15px rgba(255,156,85,.16)!important}
+.archive-stage{height:calc(100dvh - 120px);min-height:700px;max-height:none;overflow:hidden;background:radial-gradient(ellipse 50% 50% at 50% 48%,rgba(205,133,85,.21),rgba(70,96,129,.12) 50%,rgba(8,12,21,.10) 85%)}
+.archive-galaxy{inset:-52%;opacity:.28;filter:blur(28px) saturate(.75) brightness(.82);background-image:linear-gradient(90deg,rgba(11,16,27,.35),rgba(30,20,24,.18)),url('./galaxy-reference.jpg');background-position:center;background-size:cover;animation:galaxyDrift 210s linear infinite;transform-origin:center}
+.archive-galaxy:after{display:none}
+.archive-galaxy-haze{position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 38% 34% at 50% 48%,rgba(243,154,105,.12),transparent 85%),radial-gradient(ellipse 64% 60% at 50% 52%,transparent 25%,rgba(5,9,17,.48) 95%)}
+.archive-grid{opacity:.33}
+.archive-records .record{min-height:66px;animation:nrsFloat 6s ease-in-out infinite alternate;animation-delay:var(--float-delay);transition:border-color .25s,box-shadow .25s,background .25s,scale .25s}
+.archive-records .record:hover,.archive-records .record:focus-visible{scale:1.17}
+.archive-stage>.featured-record{top:10%;right:4%}
+.archive-instructions{bottom:18px}
+.archive-controls{position:absolute;bottom:50px;right:32px;width:auto;max-width:none;margin:0;pointer-events:none;opacity:.75}
+#mainApp .reader{background:rgba(3,7,13,.70)}
+#mainApp .reader-box{width:min(850px,calc(100vw - 34px));padding:54px 45px 40px;background:linear-gradient(145deg,rgba(24,30,38,.98),rgba(13,18,26,.98));border:2px solid rgba(238,135,64,.84);clip-path:polygon(0 25px,25px 0,37% 0,40% 12px,60% 12px,63% 0,calc(100% - 28px) 0,100% 28px,100% calc(100% - 22px),calc(100% - 22px) 100%,22px 100%,0 calc(100% - 22px));box-shadow:inset 0 0 0 5px rgba(255,142,69,.07),0 0 65px rgba(243,126,58,.2)}
+.reader-frame-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:-25px 0 20px;border-bottom:1px solid rgba(247,154,83,.38);padding:0 35px 15px 0;color:#ffbc83;letter-spacing:.12em;font-size:13px;font-weight:700}
+.reader-mark{width:52px;height:70px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(255,157,91,.28))}
+#mainApp .reader-box #readerClose{z-index:5}
+#mainApp .reader-box #viewTitle{color:#ffd2a7}
+@media(max-width:750px){#mainApp .archive-toolbar{padding:12px 5px;gap:6px}.archive-heading{gap:8px;flex-wrap:wrap}.archive-tag{font-size:8px}.archive-top-search{width:min(210px,46vw)!important;font-size:10px!important}.archive-stage{height:calc(100dvh - 100px);min-height:580px}.archive-stage>.featured-record{right:3%;top:8%}.archive-controls{bottom:44px;right:12px}.archive-instructions{font-size:7px}.reader-frame-heading{font-size:10px}.reader-mark{width:38px;height:52px}#mainApp .reader-box{padding:44px 22px 30px}}
+@media(prefers-reduced-motion:reduce){.archive-galaxy{animation:none!important}}
+
+/* Phase 2E — fullscreen original amber accretion disk, legible frosted relay glass */
+html,body{min-height:100%;background:#05070b!important}
+body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+#mainApp{width:100%!important;max-width:none!important;padding:0 24px 50px!important;background:transparent!important;min-height:100dvh}
+.nrs-blackhole{position:fixed;inset:0;z-index:-2;display:block;width:100vw;height:100dvh;pointer-events:none;opacity:.95}
+#mainApp .archive-stage{height:calc(100dvh - 80px);min-height:640px;max-height:none;background:transparent!important;isolation:auto;overflow:hidden}
+.archive-galaxy,.archive-galaxy-haze{display:none!important}
+.archive-grid{opacity:.14;z-index:0}
+.archive-world,.archive-center,.archive-instructions{z-index:2}
+.archive-records .record{background:rgba(12,17,24,.55)!important;backdrop-filter:blur(19px) saturate(1.12)!important;-webkit-backdrop-filter:blur(19px) saturate(1.12)!important;border:1px solid rgba(255,173,106,.66)!important;box-shadow:0 3px 30px rgba(0,0,0,.38),inset 0 1px rgba(255,220,179,.09)!important}
+.archive-records .record:hover,.archive-records .record:focus-visible{background:rgba(19,25,33,.78)!important;box-shadow:0 0 24px rgba(255,158,75,.46),0 4px 35px rgba(0,0,0,.35)!important}
+.archive-stage>.featured-record{background:rgba(23,21,25,.7)!important;backdrop-filter:blur(20px) saturate(1.1);-webkit-backdrop-filter:blur(20px) saturate(1.1)}
+.archive-tag,.archive-instructions,.archive-count{color:#eac4a5!important;text-shadow:0 1px 9px #050505;font-weight:600}
+.archive-top-search{background:rgba(8,13,20,.7)!important;border-color:rgba(255,179,119,.55)!important;color:#ffe1c2!important}
+.archive-top-search::placeholder{color:#c9a78e!important;opacity:1}
+.archive-actions .utility-btn{color:#f8c7a3!important;border-color:rgba(249,160,96,.7)!important;background:rgba(8,11,17,.6)!important}
+.archive-instructions{bottom:44px!important}
+#mainApp footer{bottom:16px!important;color:#ffe0bb!important;font-size:12px!important;text-shadow:0 1px 12px #000!important}
+.archive-center{text-shadow:0 2px 20px #050505,0 0 45px #000!important}
+.archive-center h1{text-shadow:0 0 22px rgba(255,140,51,.6),0 3px 25px #000!important}
+#mainApp .reader-box{border-width:2px;box-shadow:inset 0 0 0 5px rgba(255,144,75,.11),inset 0 0 0 11px rgba(8,12,18,.85),0 0 60px rgba(245,130,57,.18);background:linear-gradient(150deg,rgba(21,27,37,.97),rgba(10,13,22,.98))}
+#mainApp .reader-box::before{content:'NRS // SECURE INTER-TIMELINE ARCHIVE  •  DECRYPTED SIGNAL';display:block;letter-spacing:.18em;color:#e2a274;font-size:9px;border-bottom:1px solid rgba(248,150,81,.32);padding-bottom:12px;margin:-18px 0 18px}
+#mainApp .reader-box::after{content:'NRS   /   RELAY CONNECTION ESTABLISHED  ━━━━━━━━━  ARCHIVE SYSTEM';display:block;margin-top:25px;padding-top:14px;border-top:1px solid rgba(248,150,81,.35);font-size:9px;letter-spacing:.14em;color:#c99673}
+@media(max-width:750px){#mainApp{padding:0 8px 48px!important}#mainApp .archive-stage{height:calc(100dvh - 72px);min-height:590px}.archive-instructions{bottom:43px!important;font-size:7px!important}#mainApp footer{bottom:15px!important}#mainApp .reader-box::before,#mainApp .reader-box::after{font-size:7px}}
+
+/* Phase 2G v1: first supplied video, full-screen kinetic NRS data-space. */
+#mainApp .nrs-video-background{position:fixed;inset:0;z-index:-3;overflow:hidden;pointer-events:none;background:#030812}
+#mainApp .nrs-video-background video{display:block;width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(1.15) brightness(.77) contrast(1.07)}
+#mainApp .nrs-video-background::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,7,14,.30),rgba(3,7,14,.12) 50%,rgba(3,7,14,.26)),radial-gradient(ellipse at center,rgba(0,0,0,.14),rgba(0,0,0,.32) 100%);pointer-events:none}
+#mainApp .archive-stage{background:transparent!important}
+#mainApp .archive-grid{opacity:.18}
+#mainApp .archive-records .record{background:linear-gradient(130deg,rgba(12,22,35,.54),rgba(18,24,34,.69))!important;backdrop-filter:blur(22px) saturate(1.2)!important;-webkit-backdrop-filter:blur(22px) saturate(1.2)!important;border:1px solid rgba(245,167,108,.66)!important;border-radius:5px 14px 5px 14px!important;clip-path:polygon(0 12px,12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px));box-shadow:inset 0 1px rgba(255,225,180,.14),0 4px 28px rgba(0,0,0,.4)!important}
+#mainApp .archive-records .record:hover,#mainApp .archive-records .record:focus-visible{scale:1.13;background:rgba(22,32,45,.82)!important;border-color:#ffd1a0!important;box-shadow:0 0 27px rgba(255,149,67,.5),0 0 50px rgba(28,120,220,.16)!important}
+/* Unlike the former fixed featured card, this special message orbits with the others. */
+#mainApp .archive-records .record.featured-record{position:absolute!important;left:0!important;right:auto!important;top:0!important;width:clamp(188px,16vw,255px)!important;min-height:90px!important;padding:17px!important;transform:translate(var(--pos-x,0px),var(--pos-y,0px)) rotate(var(--scene-counter,0deg)) scale(var(--card-scale,1))!important;animation:nrsFloat 6s ease-in-out infinite alternate!important;animation-delay:var(--float-delay)!important;border:1px solid rgba(255,190,116,.96)!important;background:linear-gradient(125deg,rgba(56,35,27,.70),rgba(15,31,44,.70))!important;box-shadow:0 0 22px rgba(255,160,85,.27),inset 0 1px rgba(255,230,200,.2)!important;z-index:6}
+#mainApp .archive-records .record.featured-record:hover{scale:1.12!important;box-shadow:0 0 30px rgba(255,165,75,.65)!important}
+#mainApp .archive-records .record.featured-record .record-name{font-size:clamp(14px,1.15vw,17px)!important}
+#mainApp .archive-center{background:radial-gradient(ellipse at center,rgba(3,8,16,.64),rgba(3,8,16,.18) 68%,transparent 100%);padding:38px 20px;border-radius:50%}
+#mainApp .archive-center h1{color:#ffd2a4;text-shadow:0 0 18px rgba(252,136,52,.55),0 2px 20px #000!important}
+#mainApp .archive-instructions,#mainApp footer{color:#ffe1c2!important;text-shadow:0 1px 8px #000,0 0 14px #000!important}
+@media(max-width:750px){#mainApp .archive-records .record.featured-record{width:150px!important;min-height:70px!important;padding:10px!important}#mainApp .archive-records .record.featured-record .record-name{font-size:12px!important}}
+@media(prefers-reduced-motion:reduce){#mainApp .nrs-video-background video{display:none}#mainApp .nrs-video-background{background:#081320 url('./nrs-background-v1-poster.jpg') center/cover no-repeat}}
+
+/* Phase 2G hover stability: subtle in-place emphasis without pointer oscillation. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  transform-origin: center center;
+  transition: border-color .22s ease, box-shadow .22s ease, background .22s ease, opacity .22s ease, scale .22s ease;
+}
+#mainApp .archive-records .record:hover,
+#mainApp .archive-records .record:focus-visible,
+#mainApp .archive-records .record.featured-record:hover,
+#mainApp .archive-records .record.featured-record:focus-visible {
+  scale: 1.03 !important;
+}
+
+
+/* Phase 2H: legible orange angular signal frames, subtle rotation and outer priority orbit. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  /* Solid angular outer contour; the inner translucent pane keeps the video visible. */
+  --nrs-shape: polygon(0 22%, 8% 22%, 16% 0, 65% 0, 72% 17%, 90% 17%, 100% 35%, 100% 79%, 92% 100%, 55% 100%, 49% 86%, 20% 86%, 14% 100%, 0 100%);
+  clip-path:var(--nrs-shape) !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:linear-gradient(135deg,#ff672c 0%,#ff9a58 38%,#ed501b 100%) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  padding:23px 19px 21px !important;
+  min-height:104px !important;
+  overflow:hidden;
+  filter:none !important;
+  opacity:1 !important;
+  text-shadow:none !important;
+  isolation:isolate;
+}
+#mainApp .archive-records .record::before,
+#mainApp .archive-records .record.featured-record::before {
+  content:"" !important;
+  position:absolute !important;
+  inset:2.5px !important;
+  left:2.5px !important;
+  top:2.5px !important;
+  width:auto !important;
+  height:auto !important;
+  background:linear-gradient(135deg,rgba(10,12,20,.92),rgba(16,19,30,.88)) !important;
+  clip-path:var(--nrs-shape);
+  z-index:0;
+  pointer-events:none;
+  transition:none !important;
+}
+#mainApp .archive-records .record::after,
+#mainApp .archive-records .record.featured-record::after {content:none !important}
+#mainApp .archive-records .record .record-no,
+#mainApp .archive-records .record .record-name {
+  position:relative;
+  z-index:1;
+  opacity:1 !important;
+  filter:none !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.95) !important;
+}
+#mainApp .archive-records .record .record-no {color:#ffb16f !important;font-size:10px !important;font-weight:800;letter-spacing:.10em}
+#mainApp .archive-records .record .record-name {color:#fff0dc !important;font-size:clamp(13px,1.12vw,17px) !important;font-weight:800;line-height:1.5}
+#mainApp .archive-records .record.featured-record {min-height:118px !important;padding:28px 22px 23px !important}
+#mainApp .archive-records .record.featured-record .record-name {font-size:clamp(15px,1.3vw,19px) !important}
+#mainApp .archive-records .record:hover,
+#mainApp .archive-records .record:focus-visible,
+#mainApp .archive-records .record.featured-record:hover,
+#mainApp .archive-records .record.featured-record:focus-visible {scale:1.03 !important;filter:drop-shadow(0 0 7px rgba(255,120,40,.4)) !important}
+/* Disable brightness pulsing that made text appear to fade in and out. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {animation:nrsFloatClear 7s ease-in-out infinite alternate !important}
+@keyframes nrsFloatClear {from{margin-top:-3px}to{margin-top:3px}}
+@media(max-width:750px){
+ #mainApp .archive-records .record{min-height:79px !important;padding:19px 10px 14px !important}
+ #mainApp .archive-records .record.featured-record{min-height:92px !important;padding:22px 11px 15px !important}
+ #mainApp .archive-records .record .record-name{font-size:11px !important}
+}
+@media(prefers-reduced-motion:reduce){#mainApp .archive-records .record,#mainApp .archive-records .record.featured-record{animation:none !important}}
+
+
+/* Phase 2H glass restoration: retain the angular silhouette, restore frosted transparency. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  background:rgba(11,20,30,.34) !important;
+  backdrop-filter:blur(19px) saturate(1.18) !important;
+  -webkit-backdrop-filter:blur(19px) saturate(1.18) !important;
+  box-shadow:0 5px 22px rgba(0,0,0,.25),0 0 14px rgba(245,115,47,.10) !important;
+}
+/* Translucent inner tint: unlike the old opaque inset, the moving video remains visible. */
+#mainApp .archive-records .record::before,
+#mainApp .archive-records .record.featured-record::before {
+  background:linear-gradient(135deg,rgba(12,18,28,.30),rgba(16,23,35,.46)) !important;
+  inset:0 !important;
+  z-index:0 !important;
+}
+/* Thin luminous line following the exact irregular perimeter. */
+#mainApp .archive-records .record::after,
+#mainApp .archive-records .record.featured-record::after {
+  content:"" !important;
+  display:block !important;
+  position:absolute !important;
+  inset:0 !important;
+  z-index:1 !important;
+  pointer-events:none !important;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 22 H8 L16 0 H65 L72 17 H90 L100 35 V79 L92 100 H55 L49 86 H20 L14 100 H0 Z' fill='none' stroke='%23ff874a' stroke-width='1.6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat !important;
+  opacity:.93;
+}
+#mainApp .archive-records .record .record-no,
+#mainApp .archive-records .record .record-name {z-index:2 !important}
+#mainApp .archive-records .record:hover,
+#mainApp .archive-records .record:focus-visible,
+#mainApp .archive-records .record.featured-record:hover,
+#mainApp .archive-records .record.featured-record:focus-visible {
+  background:rgba(18,28,40,.47) !important;
+  box-shadow:0 0 20px rgba(255,141,70,.25),0 5px 25px rgba(0,0,0,.3) !important;
+  scale:1.03 !important;
+}
+
+/* Phase 2I: side-hugging luminous brackets; no lines across labels. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  padding-left:24px !important;
+  padding-right:24px !important;
+  clip-path:polygon(0 12px,12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px)) !important;
+}
+#mainApp .archive-records .record::before,
+#mainApp .archive-records .record.featured-record::before {
+  content:"" !important;
+  position:absolute !important;
+  inset:10px auto 10px 7px !important;
+  width:12px !important;
+  height:auto !important;
+  border-left:1.5px solid rgba(255,142,79,.95) !important;
+  border-top:1.5px solid rgba(255,142,79,.95) !important;
+  border-bottom:1.5px solid rgba(255,142,79,.95) !important;
+  background:none !important;
+  clip-path:none !important;
+  z-index:1 !important;
+  opacity:.88 !important;
+  pointer-events:none !important;
+}
+#mainApp .archive-records .record::after,
+#mainApp .archive-records .record.featured-record::after {
+  content:"" !important;
+  position:absolute !important;
+  inset:10px 7px 10px auto !important;
+  width:12px !important;
+  height:auto !important;
+  border-right:1.5px solid rgba(255,142,79,.95) !important;
+  border-top:1.5px solid rgba(255,142,79,.95) !important;
+  border-bottom:1.5px solid rgba(255,142,79,.95) !important;
+  background:none !important;
+  clip-path:none !important;
+  z-index:1 !important;
+  opacity:.88 !important;
+  pointer-events:none !important;
+}
+#mainApp .archive-world {top:calc(50% - 34px) !important}
+#mainApp .archive-center {top:calc(50% - 34px) !important}
+#mainApp .archive-instructions {font-size:11px !important;letter-spacing:.075em !important;text-align:center;white-space:normal;max-width:calc(100% - 24px)}
+@media(max-width:750px){
+ #mainApp .archive-world,#mainApp .archive-center{top:calc(50% - 22px) !important}
+ #mainApp .archive-records .record{padding-left:19px !important;padding-right:19px !important}
+ #mainApp .archive-instructions{font-size:9px !important}
+}
+
+
+/* Phase 2J: soft amber frosted glass cards, no hard L-shaped brackets. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  clip-path:polygon(0 11px,11px 0,calc(100% - 11px) 0,100% 11px,100% calc(100% - 11px),calc(100% - 11px) 100%,11px 100%,0 calc(100% - 11px)) !important;
+  background:linear-gradient(135deg,rgba(50,40,40,.47),rgba(18,24,35,.57) 58%,rgba(35,31,37,.49)) !important;
+  backdrop-filter:blur(19px) saturate(1.14) !important;
+  -webkit-backdrop-filter:blur(19px) saturate(1.14) !important;
+  border:1px solid rgba(255,170,119,.22) !important;
+  padding-left:19px !important;
+  padding-right:23px !important;
+  box-shadow:inset 0 0 24px rgba(255,155,91,.065),0 4px 20px rgba(0,0,0,.24) !important;
+}
+/* Soft diffuse amber rim rather than visible corner brackets. */
+#mainApp .archive-records .record::before,
+#mainApp .archive-records .record.featured-record::before {
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  width:auto !important;
+  height:auto !important;
+  border:0 !important;
+  background:linear-gradient(145deg,rgba(255,177,127,.12),transparent 37%,transparent 70%,rgba(255,142,87,.08)) !important;
+  clip-path:none !important;
+  opacity:1 !important;
+  pointer-events:none !important;
+  z-index:0 !important;
+}
+/* Three tiny signal indicators on the right, like the reference image. */
+#mainApp .archive-records .record::after,
+#mainApp .archive-records .record.featured-record::after {
+  content:"" !important;
+  position:absolute !important;
+  inset:auto 10px auto auto !important;
+  top:50% !important;
+  width:4px !important;
+  height:4px !important;
+  transform:translateY(-50%);
+  border:0 !important;
+  border-radius:1px !important;
+  background:#ff9c58 !important;
+  box-shadow:0 -12px 0 rgba(255,151,79,.82),0 12px 0 rgba(255,151,79,.82),0 0 8px rgba(255,131,55,.5) !important;
+  clip-path:none !important;
+  opacity:.9 !important;
+  pointer-events:none !important;
+  z-index:2 !important;
+}
+#mainApp .archive-records .record:hover,
+#mainApp .archive-records .record:focus-visible,
+#mainApp .archive-records .record.featured-record:hover,
+#mainApp .archive-records .record.featured-record:focus-visible {
+  background:linear-gradient(135deg,rgba(65,46,43,.58),rgba(22,31,44,.68)) !important;
+  border-color:rgba(255,182,132,.43) !important;
+  box-shadow:inset 0 0 26px rgba(255,153,87,.1),0 0 18px rgba(255,141,70,.18) !important;
+  scale:1.03 !important;
+}
+@media(max-width:750px){
+ #mainApp .archive-records .record,
+ #mainApp .archive-records .record.featured-record{padding-left:13px !important;padding-right:17px !important}
+ #mainApp .archive-records .record::after,
+ #mainApp .archive-records .record.featured-record::after{right:6px !important}
+}

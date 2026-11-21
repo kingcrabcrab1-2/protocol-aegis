@@ -18,3 +18,9 @@ export function isAdmin(request, env) {
 }
 
 export const unauthorized = () => json({ error: "관리자 비밀번호가 올바르지 않습니다." }, 401);
+
+export function composeTeamName(teamNumber, name) {
+  const n = String(teamNumber ?? "").replace(/\D/g, "").slice(0, 4);
+  const a = String(name ?? "").trim().slice(0, 60) || "UNKNOWN";
+  return n === "" ? a : `NRS ${n}팀 / ${a}`;
+}
