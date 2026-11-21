@@ -34,7 +34,7 @@ const glyphSet='01B8#%/\\|:;<>[]{}=+*?NRS';
 function hash(n){const v=Math.sin(n*127.1+78.233)*43758.5453;return v-Math.floor(v);}
 function draw(now){
  if(dead)return;raf=requestAnimationFrame(draw);if(!active)return;
- const t=(now-startAt)/1000,phase=Math.min(1,t/8.5),cx=w*.62,cy=h*.52,unit=Math.min(w,h),frame=Math.floor(t*18);
+ const t=(now-startAt)/1000,phase=Math.min(1,t/3),cx=w*.62,cy=h*.52,unit=Math.min(w,h),frame=Math.floor(t*18);
  const pulse=Math.pow(Math.max(0,Math.sin(t*3.4)*Math.sin(t*7.7)),8);
  ctx.fillStyle='#050506';ctx.fillRect(0,0,w,h);
  const halo=ctx.createRadialGradient(cx,cy,unit*.04,cx,cy,unit*.78);
@@ -117,13 +117,13 @@ function appendLine(i){if(dead)return;const n=el('div','nrs-line',log,lines[i%li
 function audioStart(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audio=new AC();master=audio.createGain();master.gain.value=.12;const lp=audio.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;master.connect(lp);lp.connect(audio.destination);
  const t=audio.currentTime+.05;
  const tone=(freq,delay,dur,gain,detune=0)=>{const osc=audio.createOscillator(),env=audio.createGain();osc.type='sine';osc.frequency.setValueAtTime(freq,t+delay);osc.detune.value=detune;env.gain.setValueAtTime(.0001,t+delay);env.gain.linearRampToValueAtTime(gain,t+delay+Math.min(1.6,dur*.35));env.gain.exponentialRampToValueAtTime(.0001,t+delay+dur);osc.connect(env);env.connect(master);osc.start(t+delay);osc.stop(t+delay+dur+.1);};
- tone(110,0,7,.23);tone(164.81,.3,7,.13);tone(220,1.2,6,.11,3);tone(329.63,2.4,5,.06,-4);tone(440,4.6,3,.045);
+ tone(110,0,2.7,.23);tone(164.81,.15,2.6,.13);tone(220,.5,2.2,.11,3);tone(329.63,1.0,1.8,.06,-4);tone(440,1.7,1.1,.045);
  }catch(e){audio=null;}}
 function begin(withAudio){if(active||dead)return;active=true;gate.classList.add('hidden');startAt=performance.now();terminal.classList.add('on');status.classList.add('on');if(withAudio)audioStart();
- if(reduce){lines.forEach((_,i)=>appendLine(i));later(()=>finish(),2200);return;}
- let i=0;const pump=()=>{if(dead)return;appendLine(i++);if(i<64)later(pump,i<9?170:i<42?90:65);};pump();
- later(()=>{root.classList.add('nrs-final-flare');status.textContent='NRS // ARCHIVE CONNECTION ESTABLISHED';},7200);
- later(()=>finish(),8500);
+ if(reduce){lines.forEach((_,i)=>appendLine(i));later(()=>finish(),900);return;}
+ let i=0;const pump=()=>{if(dead)return;appendLine(i++);if(i<64)later(pump,i<9?65:i<42?36:25);};pump();
+ later(()=>{root.classList.add('nrs-final-flare');status.textContent='NRS // ARCHIVE CONNECTION ESTABLISHED';},2450);
+ later(()=>finish(),3000);
 }
 function finish(){if(dead)return;dead=true;timers.forEach(clearTimeout);cancelAnimationFrame(raf);removeEventListener('resize',resize);try{localStorage.setItem('aegis_intro_seen','1');}catch(e){}if(audio){audio.close().catch(()=>{});audio=null;}root.classList.add('out');later(()=>root.remove(),800);const cb=onDone;onDone=null;if(cb){try{cb();}catch(e){console.error('NRS archive transition failed:',e);document.getElementById('boot')?.classList.add('hidden');document.getElementById('mainApp')?.classList.remove('hidden');}}}
 go.addEventListener('click',()=>begin(true));silent.addEventListener('click',finish);skip.addEventListener('click',finish);

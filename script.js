@@ -938,7 +938,7 @@ $("restoreFile").addEventListener("change", async (event) => {
 
 createAegisCursorHud();
 try {
-  if (window.AegisIntro) window.AegisIntro.start(() => bootSequence(true));
+  if (window.AegisIntro) window.AegisIntro.start(() => bootSequence(false));
   else bootSequence();
 } catch (e) {
   bootSequence();
