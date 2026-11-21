@@ -254,6 +254,48 @@ async function loadRecords() {
 
 }
 
+let archivePage = 0;
+let archiveLayoutWidth = window.innerWidth;
+
+function archiveIsMobile() { return window.matchMedia("(max-width: 750px)").matches; }
+
+function archivePageSize() {
+  if (archiveIsMobile()) return Infinity; // Existing mobile vertical list stays intact.
+  const stage = document.querySelector(".archive-stage");
+  const w = stage?.clientWidth || window.innerWidth;
+  const h = stage?.clientHeight || window.innerHeight;
+  // Keep the radar and the existing card dimensions unobstructed.
+  return w < 950 || h < 740 ? 8 : w < 1350 ? 10 : 12;
+}
+
+function updateArchivePager(total, pageSize) {
+  let pager = document.getElementById("nrsArchivePager");
+  if (!pager) {
+    pager = document.createElement("nav");
+    pager.id = "nrsArchivePager";
+    pager.setAttribute("aria-label", "Archive signal pages");
+    pager.style.cssText = "position:relative;z-index:14;display:flex;justify-content:center;align-items:center;gap:14px;margin:0 auto 5px;color:#ffcca2;font:600 11px monospace;letter-spacing:.14em;";
+    document.querySelector(".archive-toolbar")?.insertAdjacentElement("afterend", pager);
+  }
+  const pages = Number.isFinite(pageSize) ? Math.ceil(total / pageSize) : 1;
+  pager.style.display = pages > 1 ? "flex" : "none";
+  pager.replaceChildren();
+  if (pages <= 1) return;
+  const makeButton = (label, next, disabled) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.disabled = disabled;
+    button.style.cssText = "background:rgba(10,19,30,.86);color:#ffca9c;border:1px solid rgba(255,165,95,.6);padding:7px 14px;cursor:pointer;opacity:" + (disabled ? ".35" : "1");
+    button.addEventListener("click", () => { archivePage = next; renderRecords(); });
+    return button;
+  };
+  pager.append(makeButton("◀ PREV", archivePage - 1, archivePage === 0));
+  const indicator = document.createElement("span");
+  indicator.textContent = `SIGNAL SECTOR ${String(archivePage + 1).padStart(2,"0")} / ${String(pages).padStart(2,"0")}`;
+  pager.append(indicator, makeButton("NEXT ▶", archivePage + 1, archivePage >= pages - 1));
+}
+
 function renderRecords() {
   // Remove previously detached priority cards before refreshing filtered results.
   document.querySelectorAll(".archive-stage > .featured-record").forEach((node) => node.remove());
@@ -287,6 +329,8 @@ function renderRecords() {
 
   if (!filtered.length) {
     if ($("archiveCount")) $("archiveCount").textContent = "SIGNALS / 00";
+    archivePage = 0;
+    updateArchivePager(0, Infinity);
 
     $("records").innerHTML =
       "<p class='muted'>검색 결과가 없습니다.</p>";
@@ -298,8 +342,16 @@ function renderRecords() {
   const count = $("archiveCount");
   if (count) count.textContent = `SIGNALS / ${String(filtered.length).padStart(2, "0")}`;
 
+  const pageSize = archivePageSize();
+  const pages = Number.isFinite(pageSize) ? Math.ceil(filtered.length / pageSize) : 1;
+  archivePage = Math.max(0, Math.min(archivePage, pages - 1));
+  updateArchivePager(filtered.length, pageSize);
+  const visible = Number.isFinite(pageSize)
+    ? filtered.slice(archivePage * pageSize, (archivePage + 1) * pageSize)
+    : filtered;
+
   $("records").innerHTML =
-    filtered.map((item, index) => `
+    visible.map((item, index) => `
 
       <article
         class="record ${item.is_pinned ? "pinned" : ""} ${item.id === 1 || /신지안/.test(item.team_name || "") ? "featured-record" : ""}" style="--float-delay:${-(index % 7)*0.83}s;"
@@ -324,30 +376,35 @@ function renderRecords() {
 
     `).join("");
 
-  // Phase 2I layout: wider, slightly higher signal field. Keep all records
-  // attached to the rotating world, and preserve the separate priority orbit.
-  const stage = document.querySelector(".archive-stage");
-  const stageWidth = stage.clientWidth;
-  const stageHeight = stage.clientHeight;
-  const regular = [...$("records").querySelectorAll(".record")];
-  const ordinary = regular.filter(node => !node.classList.contains("featured-record"));
-  const safeRadius = Math.max(145, Math.min(stageWidth * .39, stageHeight * .5 - 92));
-  const verticalLift = Math.min(48, stageHeight * .055);
-  ordinary.forEach((node, i) => {
-    const a = i * 2.399963229728653 + .45;
-    const layer = i % 4;
-    const radius = safeRadius * [.78, .89, .98, 1.07][layer];
-    node.style.setProperty("--pos-x", `${Math.cos(a) * radius}px`);
-    node.style.setProperty("--pos-y", `${Math.sin(a) * radius - verticalLift}px`);
-    node.style.setProperty("--card-scale", `${[.88, 1, .93, 1.06][layer]}`);
-  });
-  regular.filter(node => node.classList.contains("featured-record")).forEach((node, i) => {
-    const a = Math.PI + .20 + i * .18;
-    const radius = safeRadius * 1.18;
-    node.style.setProperty("--pos-x", `${Math.cos(a) * radius}px`);
-    node.style.setProperty("--pos-y", `${Math.sin(a) * radius - verticalLift}px`);
-    node.style.setProperty("--card-scale", ".99");
-  });
+  // Adaptive orbit sectors: distribute visible cards across separated rings.
+  // Never reposition the radar, change card styling, or affect mobile's list.
+  if (!archiveIsMobile()) {
+    const stage = document.querySelector(".archive-stage");
+    const w = stage.clientWidth, h = stage.clientHeight;
+    const nodes = [...$("records").querySelectorAll(".record")];
+    const center = Math.min(w * .5, h * .5);
+    const outerRadius = Math.max(215, Math.min(w * .43, h * .46));
+    const innerRadius = Math.max(170, outerRadius * .72);
+    const count = nodes.length;
+    const innerCount = Math.min(Math.floor(count * .42), 4);
+    const outerCount = count - innerCount;
+    const placements = [];
+    // Keep a central gap for the original NRS radar/title.
+    nodes.forEach((node, i) => {
+      const isInner = i < innerCount;
+      const n = isInner ? innerCount : outerCount;
+      const k = isInner ? i : i - innerCount;
+      const angle = (2 * Math.PI * k / Math.max(n, 1)) + (isInner ? -.45 : .17);
+      const radius = isInner ? innerRadius : outerRadius;
+      const yLift = Math.min(36, h * .04);
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius - yLift;
+      node.style.setProperty("--pos-x", `${Math.round(x)}px`);
+      node.style.setProperty("--pos-y", `${Math.round(y)}px`);
+      node.style.setProperty("--card-scale", node.classList.contains("featured-record") ? ".99" : ".94");
+      placements.push({x,y});
+    });
+  }
 
   document
     .querySelectorAll(".record")
@@ -780,7 +837,7 @@ $("soundToggle").addEventListener(
 
 $("searchInput").addEventListener(
   "input",
-  renderRecords
+  () => { archivePage = 0; renderRecords(); }
 );
 
 
@@ -1020,3 +1077,14 @@ try {
 } catch (e) {
   bootSequence();
 }
+
+// Recalculate page capacity and orbit positions when viewport changes.
+let nrsArchiveResizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(nrsArchiveResizeTimer);
+  nrsArchiveResizeTimer = setTimeout(() => {
+    if (Math.abs(window.innerWidth - archiveLayoutWidth) < 12) return;
+    archiveLayoutWidth = window.innerWidth;
+    if (allRecords.length) renderRecords();
+  }, 180);
+});
