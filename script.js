@@ -171,7 +171,7 @@ async function typeMessage(target, text) {
 
 }
 
-async function bootSequence() {
+async function bootSequence(short = false) {
 
   $("soundToggle").textContent =
     soundOn
@@ -197,6 +197,8 @@ async function bootSequence() {
 
   ];
 
+  if (short) lines.splice(0, 8);
+
   let out = "";
 
   for (let i = 0; i < lines.length; i++) {
@@ -212,11 +214,11 @@ async function bootSequence() {
 
     play("clickSound");
 
-    await wait(i < 4 ? 180 : 120);
+    await wait(short ? 70 : i < 4 ? 180 : 120);
 
   }
 
-  await wait(500);
+  await wait(short ? 250 : 500);
 
   $("boot").classList.add("hidden");
   $("mainApp").classList.remove("hidden");
@@ -935,4 +937,9 @@ $("restoreFile").addEventListener("change", async (event) => {
 });
 
 createAegisCursorHud();
-bootSequence();
+try {
+  if (window.AegisIntro) window.AegisIntro.start(() => bootSequence(true));
+  else bootSequence();
+} catch (e) {
+  bootSequence();
+}

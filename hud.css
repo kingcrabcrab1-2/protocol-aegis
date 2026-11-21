@@ -1,0 +1,27 @@
+/* PROTOCOL : AEGIS — Phase 2A INTRO */
+.aegis-intro{position:fixed;inset:0;z-index:9500;background:#020100;color:var(--orange-bright);font-family:var(--font-terminal,monospace);overflow:hidden;transition:opacity .7s ease}
+.aegis-intro.out{opacity:0;pointer-events:none}
+.aegis-intro canvas{position:absolute;inset:0;width:100%;height:100%;transition:opacity 1s ease}
+.ai-log{position:absolute;left:clamp(16px,4vw,56px);top:clamp(70px,14vh,140px);margin:0;font-size:clamp(12px,1.5vw,16px);line-height:1.8;letter-spacing:.06em;white-space:pre-wrap;color:var(--orange)}
+.ai-log i{display:inline-block;width:.6em;height:1em;background:var(--orange);vertical-align:-2px;animation:aiBlink 1s steps(2) infinite}
+.ai-phase{position:absolute;left:clamp(16px,4vw,56px);top:20px;font-size:12px;letter-spacing:.2em;color:var(--muted,#ad754f)}
+.ai-hud{position:absolute;font-size:11px;line-height:1.9;letter-spacing:.1em;color:var(--orange-pale,#ffd39c);opacity:0;transition:opacity .6s;pointer-events:none}
+.ai-hud.on{opacity:.82}
+.ai-hud b{color:var(--orange);font-weight:400}
+.ai-hl{left:clamp(16px,4vw,56px);bottom:70px}
+.ai-hr{right:clamp(16px,4vw,56px);top:70px;text-align:right}
+.ai-label{left:50%;bottom:clamp(64px,12vh,110px);transform:translateX(-50%);text-align:center;font-size:13px;letter-spacing:.3em;white-space:nowrap}
+.ai-label em{display:block;font-style:normal;font-size:10px;letter-spacing:.2em;color:var(--muted,#ad754f)}
+.ai-skip{position:absolute;right:clamp(16px,4vw,56px);top:14px;padding:6px 14px;background:transparent;color:var(--orange);border:1px solid var(--border-soft,#6b2a10);font:inherit;font-size:12px;letter-spacing:.2em;cursor:pointer}
+.ai-skip:hover,.ai-skip:focus-visible{background:rgba(255,100,31,.14);outline:1px solid var(--orange)}
+.ai-sign{position:absolute;right:clamp(12px,3vw,28px);bottom:10px;font-size:11px;letter-spacing:.1em;color:rgba(255,160,100,.4);pointer-events:none}
+.ai-auth{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:0;transition:opacity 1s;text-align:center;pointer-events:none}
+.ai-auth.on{opacity:1;pointer-events:auto}
+.ai-auth h2{margin:0;font-size:clamp(28px,6vw,62px);letter-spacing:.14em;color:var(--orange-bright);text-shadow:0 0 14px rgba(255,100,31,.45);font-weight:400}
+.ai-auth p{margin:0;font-size:clamp(10px,1.6vw,14px);letter-spacing:.22em;color:var(--orange-pale)}
+.ai-enter{margin-top:18px;padding:12px 34px;background:rgba(255,100,31,.1);color:var(--orange-bright);border:1px solid var(--orange);font:inherit;font-size:16px;letter-spacing:.3em;cursor:pointer;opacity:0;transition:opacity .8s}
+.ai-enter.on{opacity:1}
+.ai-enter:hover,.ai-enter:focus-visible{background:rgba(255,100,31,.28);outline:2px solid var(--orange-bright);outline-offset:3px}
+@keyframes aiBlink{50%{opacity:0}}
+@media (max-width:700px){.ai-hr{top:auto;bottom:100px;font-size:10px}.ai-hl{bottom:46px;font-size:10px}.ai-label{letter-spacing:.14em;font-size:11px}}
+@media (prefers-reduced-motion:reduce){.ai-log i{animation:none}.aegis-intro,.aegis-intro canvas,.ai-auth,.ai-enter,.ai-hud{transition:none}}
