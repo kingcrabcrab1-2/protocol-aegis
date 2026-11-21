@@ -1,390 +1,95 @@
-/* PROTOCOL : AEGIS — Phase 2A: MULTIVERSE RECONSTRUCTION intro (WebGL particles, Canvas2D fallback) */
+/* PROTOCOL : AEGIS — NRS original cinematic signal corridor. No third-party footage/audio. */
 (() => {
-"use strict";
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const small = matchMedia("(max-width:700px)").matches || (navigator.hardwareConcurrency || 4) <= 4;
-let seen = false; try { seen = localStorage.getItem("aegis_intro_seen") === "1"; } catch (e) {}
-const el = (t, c, p, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; if (p) p.appendChild(e); return e; };
-const rnd = Math.random, PI2 = Math.PI * 2;
-const frame = () => new Promise(requestAnimationFrame);
-let N = small ? 2600 : 7500, dead = false, onDone = null, cancelSleep = [];
-const sleep = (ms) => new Promise((r) => { const id = setTimeout(r, ms); cancelSleep.push(() => { clearTimeout(id); r(); }); });
-const tick = () => {};
-
-/* ---------- 입자 형상 생성: [x,y,z,tone] * N ---------- */
-const dir = () => { const z = rnd() * 2 - 1, t = rnd() * PI2, r = Math.sqrt(1 - z * z); return [r * Math.cos(t), z, r * Math.sin(t)]; };
-const sstep = (a, b, x) => { x = Math.min(1, Math.max(0, (x - a) / (b - a))); return x * x * (3 - 2 * x); };
-const fill = (fn) => { const o = new Float32Array(N * 4); for (let i = 0; i < N; i++) { const p = fn(i); o.set(p, i * 4); } return o; };
-const shapes = {};
-function build() {
-  shapes.noise = fill(() => { const d = dir(), r = 1.6 + rnd() * 1.6; return [d[0] * r, d[1] * r, d[2] * r, .3]; });
-  /* Nine distinct cosmic topologies: halo, lattice, accretion, vortex, singularity,
-     entangled orbits, wormhole, standing waves, and brane intersection. */
-  const ring = (r, a, tilt=0) => [r*Math.cos(a), r*Math.sin(a)*Math.cos(tilt), r*Math.sin(a)*Math.sin(tilt)];
-  shapes.genesis = fill((i) => { const a=rnd()*PI2, r=.12+Math.pow(rnd(),.65)*1.25; const p=ring(r,a,.22); return [p[0],p[1],p[2]+(rnd()-.5)*.18,.42+rnd()*.5]; });
-  shapes.halo = fill(() => { const a=rnd()*PI2, r=.65+rnd()*.45; const p=ring(r,a,.45); return [p[0],p[1],p[2]+(rnd()-.5)*.12,.55+rnd()*.45]; });
-  shapes.lattice = fill(() => { const a=rnd()*PI2, b=rnd()*PI2, r=.9+.12*Math.sin(7*a+4*b); return [r*Math.cos(a)*Math.sin(b),r*Math.sin(a)*Math.sin(b),r*Math.cos(b),.5+rnd()*.5]; });
-  shapes.accretion = fill(() => { const a=rnd()*PI2, r=.12+Math.sqrt(rnd())*1.18, swirl=a+r*3.8; return [r*Math.cos(swirl),r*Math.sin(swirl)*.56,(rnd()-.5)*.3+r*.18*Math.sin(a*3),.4+rnd()*.6]; });
-  shapes.vortex = fill(() => { const t=rnd(), a=t*PI2*5+(rnd()-.5)*1.5, r=.1+1.12*t; return [r*Math.cos(a), (t-.5)*1.6, r*Math.sin(a),.45+rnd()*.55]; });
-  shapes.singularity = fill(() => { const a=rnd()*PI2, r=.16+Math.pow(rnd(),1.9)*1.2; return [r*Math.cos(a),r*Math.sin(a),.38*Math.sin(a*4+r*8),.5+rnd()*.5]; });
-  shapes.entanglement = fill(() => { const a=rnd()*PI2, which=rnd()<.5?-1:1; const r=.47+.12*Math.sin(a*3); return [which*.48+r*Math.cos(a),r*Math.sin(a),.46*Math.sin(a*2+which),.55+rnd()*.45]; });
-  shapes.wormhole = fill(() => { const a=rnd()*PI2, t=rnd()*2-1, r=.26+.9*Math.abs(t)**1.4; return [r*Math.cos(a),t*1.2,r*Math.sin(a),.45+rnd()*.55]; });
-  shapes.resonance = fill(() => { const a=rnd()*PI2, r=Math.sqrt(rnd())*1.18; return [r*Math.cos(a),r*Math.sin(a),.3*Math.sin(r*17+a*3),.45+rnd()*.55]; });
-  shapes.brane = fill(() => { const a=rnd()*PI2, b=rnd()*PI2, R=.72, r=.32; return [(R+r*Math.cos(b))*Math.cos(a), (R+r*Math.cos(b))*Math.sin(a),r*Math.sin(b)+.22*Math.sin(3*a),.45+rnd()*.55]; });
-  // Continuous, densely sampled orbital strands instead of scattered ASCII glyphs.
-  shapes.wire = fill((i) => {
-    const strand = i % 110, t = Math.floor(i / 110) / Math.ceil(N / 110) * PI2;
-    const a = strand / 110 * PI2, major = .74, minor = .34;
-    const ripple = .07 * Math.sin(5*a + 3*t);
-    return [(major + (minor+ripple)*Math.cos(t))*Math.cos(a),
-            (major + (minor+ripple)*Math.cos(t))*Math.sin(a),
-            (minor+ripple)*Math.sin(t), .86 + rnd()*.14];
-  });
-  shapes.brain = fill(() => {
-    const d=dir(), fold=.075*Math.sin(13*d[0]+8*d[2])*Math.cos(17*d[1]-5*d[0]);
-    return [d[0]*(.85+fold), d[1]*(.72+fold), d[2]*(.72+fold), .75+rnd()*.25];
-  });
-  shapes.head = fill(() => {
-    const d=dir(), y=d[1], face=d[2]>.1;
-    const jaw = y<-.2 ? .82+.28*y : 1;
-    const nose = face && Math.abs(d[0])<.12 && y>-.12 && y<.3 ? .19 : 0;
-    return [d[0]*.66*jaw, y*.99, d[2]*.70*jaw+nose, .75+rnd()*.25];
-  });
+'use strict';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const el=(tag,cls,parent,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;if(parent)parent.appendChild(n);return n;};
+const root=el('div','aegis-intro nrs-cinema');root.setAttribute('role','dialog');root.setAttribute('aria-label','NRS 시스템 연결');
+const canvas=el('canvas','nrs-cinema-canvas',root),ctx=canvas.getContext('2d',{alpha:false});
+const film=el('div','nrs-film',root),sweep=el('div','nrs-sweep',root);
+const terminal=el('section','nrs-terminal',root);
+el('div','nrs-terminal-head',terminal,'SYSTEM BOOT / ARCHIVED TERMINAL');
+const log=el('div','nrs-terminal-log',terminal);log.setAttribute('aria-live','off');
+const status=el('div','nrs-status',root,'NRS  //  INTER-TIMELINE RELAY');
+const skip=el('button','ai-skip',root,'SKIP ▸▸');skip.type='button';
+el('div','ai-sign',root,'written by. hamge');
+const gate=el('div','ai-gate',root),gateFrame=el('div','ai-gate-frame',gate),bar=el('div','ai-gate-titlebar',gateFrame);
+el('span','',bar,'NRS // ACCESS CONTROL');el('span','',bar,'SYS.WARNING / 001');
+const body=el('div','ai-gate-body',gateFrame);
+el('div','ai-gate-kicker',body,'N.R.S / 타임라인 간 시스템 연결 시도중 ···');
+el('h2','',body,'존재 접근 확인');
+el('p','ai-gate-message',body,'존재성을 헌납하였기 때문에\n감각 이상 현상이 일어날 수 있습니다.\n앞으로 나아가시겠습니까?');
+const go=el('button','ai-gate-button',body,'앞으로 나아간다.');go.type='button';
+const silent=el('button','ai-gate-muted',body,'감각 활성화를 끕니다.');silent.type='button';
+el('div','ai-gate-footer',gateFrame,'INTER-TIMELINE RELAY   //   SIGNAL UNSTABLE');
+const artifacts=el('div','ai-gate-artifacts',gate);artifacts.setAttribute('aria-hidden','true');
+const glyphs=['// 0x00','▒▒ ERROR','NRS_██','[ !! ]','010101','SIGNAL LOST','△ / ∅','ERR_07','⟟ ⟐ ⌁','SYNC ?','▒░▒░','[ RECONNECT ]'];
+for(let i=0;i<20;i++){const n=el('span','',artifacts,glyphs[i%glyphs.length]);n.style.left=(3+i*37%92)+'%';n.style.top=(4+i*29%89)+'%';n.style.animationDelay=(-i*.37)+'s';n.style.animationDuration=(2.4+i%6*.65)+'s';}
+el('div','ai-gate-flash',gate).setAttribute('aria-hidden','true');
+let onDone=null,dead=false,active=false,raf=0,timers=[],audio=null,master=null,startAt=0,w=0,h=0,dpr=1;
+const later=(fn,ms)=>{const t=setTimeout(fn,ms);timers.push(t);return t;};
+function resize(){dpr=Math.min(devicePixelRatio||1,1.7);w=innerWidth;h=innerHeight;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
+function rand(i,s=1){let v=Math.sin(i*127.1+s*311.7)*43758.5453;return v-Math.floor(v);}
+/* An original, animated inter-timeline corridor: warped concentric light ribbons, magnetic filaments and signal faults. */
+function draw(now){if(dead)return;raf=requestAnimationFrame(draw);if(!active)return;
+ const t=(now-startAt)/1000,cx=w*.56,cy=h*.51,scale=Math.min(w,h),glitch=!reduce&&Math.sin(t*12.1)*Math.sin(t*7.8)>.93;
+ ctx.fillStyle='#050302';ctx.fillRect(0,0,w,h);
+ const glow=ctx.createRadialGradient(cx,cy,scale*.04,cx,cy,scale*.77);glow.addColorStop(0,'#a64215');glow.addColorStop(.19,'#37170c');glow.addColorStop(.57,'#110907');glow.addColorStop(1,'#030202');ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+ ctx.save();ctx.globalCompositeOperation='screen';
+ for(let j=0;j<58;j++){
+  const depth=(j/58+t*.27)%1,near=1-depth,r=scale*(.025+Math.pow(near,1.75)*.86);
+  const alpha=(.03+.24*Math.pow(near,.7))*(1-Math.pow(depth,6));
+  ctx.beginPath();for(let k=0;k<=150;k++){
+   const a=k/150*Math.PI*2,warp=1+.14*Math.sin(a*5+t*.57+j*.27)+.07*Math.cos(a*11-t*.32+j);
+   const x=cx+Math.cos(a+t*.055)*r*warp*1.35,y=cy+Math.sin(a+t*.055)*r*warp*.78;
+   if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }ctx.closePath();ctx.strokeStyle=`rgba(${j%4===0?'255,178,106':'241,92,35'},${alpha})`;ctx.lineWidth=j%7===0?1.6:.65;ctx.stroke();
+ }
+ for(let j=0;j<110;j++){
+  const a=rand(j)*Math.PI*2,offset=rand(j,4)*6.28,inner=.035+rand(j,2)*.11;
+  ctx.beginPath();for(let k=0;k<40;k++){
+   const z=k/39,depth=(z+t*.065+rand(j,3))%1,r=scale*(inner+Math.pow(depth,2.2)*.95);
+   const angle=a+.28*Math.sin(z*8+t*.37+offset)+z*.35;
+   const x=cx+Math.cos(angle)*r*1.25,y=cy+Math.sin(angle)*r*.75;
+   if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }ctx.strokeStyle=`rgba(255,${80+Math.floor(rand(j,5)*90)},47,${.035+rand(j,6)*.11})`;ctx.lineWidth=.55;ctx.stroke();
+ }
+ for(let i=0;i<(w<700?190:460);i++){
+  const a=rand(i,11)*Math.PI*2,z=(rand(i,12)+t*(.04+rand(i,13)*.11))%1,r=scale*(.025+z*z*.9);
+  const x=cx+Math.cos(a+t*.06)*r*1.35,y=cy+Math.sin(a+t*.06)*r*.78;
+  ctx.fillStyle=`rgba(255,${105+Math.floor(rand(i,14)*100)},${40+Math.floor(rand(i,15)*55)},${.09+z*.55})`;
+  ctx.fillRect(x,y,z> .7?1.5:1,z>.7?1.5:1);
+ }
+ ctx.restore();
+ if(glitch){ctx.fillStyle='rgba(255,110,48,.065)';for(let k=0;k<4;k++)ctx.fillRect(0,rand(k,Math.floor(t*10))*h,w,1+rand(k,31)*5);}
+ const vignette=ctx.createRadialGradient(w*.5,h*.5,scale*.1,w*.5,h*.5,Math.max(w,h)*.74);vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.75)');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
 }
-
-/* ---------- 상태 ---------- */
-const S = { mix: 0, yaw: 0, pitch: 0, damage: 0, collapse: 0, amp: 0, mx: 0, my: 0, sx: 0, sy: 0, spin: 0 };
-let A = null, Bf = null, gl = null, ctx2 = null, cv, prog, U = {}, bufA, bufB;
-
-/* ---------- DOM ---------- */
-const root = el("div", "aegis-intro"); root.setAttribute("role", "dialog"); root.setAttribute("aria-label", "PROTOCOL : AEGIS 접속 연출");
-cv = el("canvas", "", root);
-const phase = el("div", "ai-phase", root), log = el("pre", "ai-log", root), cur = el("i");
-const hl = el("div", "ai-hud ai-hl", root), hr = el("div", "ai-hud ai-hr", root), lab = el("div", "ai-hud ai-label", root);
-const auth = el("div", "ai-auth", root), rad = el("canvas", "", auth); rad.style.cssText = "position:absolute;inset:0;opacity:.9;pointer-events:none";
-const t1 = el("h2", "", auth, "NRS / 아카이브 연결"), t2 = el("p", "", auth, "타임라인 간 연결 승인"), t3 = el("p", "", auth);
-const skip = el("button", "ai-skip", root, "SKIP ▸▸"); skip.type = "button";
-el("div", "ai-sign", root, "written by. hamge");
-const cascade = el("div", "ai-cascade", root); cascade.setAttribute("aria-hidden", "true");
-const gate = el("div", "ai-gate", root);
-el("div", "ai-gate-kicker", gate, "NRS / 타임라인 간 시스템 연결 시도 중 ···");
-el("h2", "", gate, "존재 접근 확인");
-el("p", "ai-gate-message", gate, "존재성을 헌납하였기 때문에\n감각 이상 현상이 일어날 수 있습니다.\n앞으로 나아가시겠습니까?");
-const startSound = el("button", "ai-gate-button", gate, "앞으로 나아간다.");
-const startSilent = el("button", "ai-gate-muted", gate, "감각 활성화를 끕니다.");
-startSound.type = startSilent.type = "button";
-
-/* NRS unstable timeline / isolated decorative interference on the access gate. */
-const gateFrame = el("div", "ai-gate-frame", gate);
-const gateBar = el("div", "ai-gate-titlebar", gateFrame);
-el("span", "", gateBar, "NRS // ACCESS CONTROL");
-el("span", "", gateBar, "SYS.WARNING / 001");
-const gateBody = el("div", "ai-gate-body", gateFrame);
-// Move existing interactive elements into the window, preserving their listeners.
-[...gate.children].filter(n => n !== gateFrame).forEach(n => gateBody.appendChild(n));
-const gateFooter = el("div", "ai-gate-footer", gateFrame, "INTER-TIMELINE RELAY   //   SIGNAL UNSTABLE");
-const gateArtifacts = el("div", "ai-gate-artifacts", gate);
-gateArtifacts.setAttribute("aria-hidden", "true");
-const glyphs = ["// 0x00", "▒▒ ERROR", "NRS_██", "[ !! ]", "010101", "SIGNAL LOST", "△ / ∅", "ERR_07", "⟟ ⟐ ⌁", "SYNC ?", "▒░▒░", "[ RECONNECT ]"];
-for (let i=0; i<20; i++) {
-  const g = el("span", "", gateArtifacts, glyphs[i % glyphs.length]);
-  g.style.left = (3 + ((i*37)%92)) + "%";
-  g.style.top = (4 + ((i*29)%89)) + "%";
-  g.style.animationDelay = (-i*.37) + "s";
-  g.style.animationDuration = (2.4 + (i%6)*.65) + "s";
+const lines=[
+'NRS / CENTRAL DATA AUTHORITY','GARDINERS ISLAND / ARCHIVED TERMINAL','PROTOCOL : AEGIS',
+'BOOT SEQUENCE INITIALIZED...','ACCESSING...','VERIFYING UNKNOWN TIMELINE...',
+'SACRIFICE REQUIREMENT : REVOKED','GROUP CONSCIOUSNESS SYNC : STABLE',
+'INTER-TIMELINE RELAY : ONLINE','SIGNAL NOISE : ACCEPTABLE',
+'MEMORY CHANNELS : ONLINE','TIMELINE BRANCH 008 : FOUND',
+'RECONSTRUCTING ARCHIVE INDEX','ARCHIVE FRAGMENT 001 : RESTORED',
+'TRANSMISSION RECEIVED','INITIALIZING SENSORY ARRAY',
+'CONSCIOUSNESS SYNC : STABLE','NRS AUTHORIZATION CONFIRMED',
+'ANOMALY DETECTED / RECHECKING','ACCESS PERMISSION : PENDING',
+'CONNECTING INTER-TIMELINE RELAY','LOADING ARCHIVED RECORDS',
+'ARCHIVE INTEGRITY : 99.8%','TIMELINE CONVERGENCE DETECTED',
+'ACCESS PERMISSION : GRANTED','NRS / ARCHIVE CONNECTION ESTABLISHED'];
+function appendLine(i){if(dead)return;const n=el('div','nrs-line',log,lines[i%lines.length]);if(i%7===0)n.classList.add('nrs-line-bright');if(i%11===0)n.classList.add('nrs-line-fault');while(log.children.length>32)log.firstChild.remove();log.scrollTop=log.scrollHeight;}
+function audioStart(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audio=new AC();master=audio.createGain();master.gain.value=.12;const lp=audio.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;master.connect(lp);lp.connect(audio.destination);
+ const t=audio.currentTime+.05;
+ const tone=(freq,delay,dur,gain,detune=0)=>{const osc=audio.createOscillator(),env=audio.createGain();osc.type='sine';osc.frequency.setValueAtTime(freq,t+delay);osc.detune.value=detune;env.gain.setValueAtTime(.0001,t+delay);env.gain.linearRampToValueAtTime(gain,t+delay+Math.min(1.6,dur*.35));env.gain.exponentialRampToValueAtTime(.0001,t+delay+dur);osc.connect(env);env.connect(master);osc.start(t+delay);osc.stop(t+delay+dur+.1);};
+ tone(110,0,7,.23);tone(164.81,.3,7,.13);tone(220,1.2,6,.11,3);tone(329.63,2.4,5,.06,-4);tone(440,4.6,3,.045);
+ }catch(e){audio=null;}}
+function begin(withAudio){if(active||dead)return;active=true;gate.classList.add('hidden');startAt=performance.now();terminal.classList.add('on');status.classList.add('on');if(withAudio)audioStart();
+ if(reduce){lines.forEach((_,i)=>appendLine(i));later(()=>finish(),2200);return;}
+ let i=0;const pump=()=>{if(dead)return;appendLine(i++);if(i<64)later(pump,i<9?170:i<42?90:65);};pump();
+ later(()=>{root.classList.add('nrs-final-flare');status.textContent='NRS // ARCHIVE CONNECTION ESTABLISHED';},7200);
+ later(()=>finish(),8500);
 }
-const gateFlash = el("div", "ai-gate-flash", gate);
-gateFlash.setAttribute("aria-hidden", "true");
-let interferenceTimer = null;
-function interference() {
-  if (dead || gate.classList.contains("hidden")) { clearTimeout(interferenceTimer); return; }
-  if (!reduce) {
-    gate.classList.add("ai-interference");
-    setTimeout(() => gate.classList.remove("ai-interference"), 85 + rnd()*65);
-  }
-  interferenceTimer = setTimeout(interference, 2600 + rnd()*3400);
-}
-if (!reduce) interferenceTimer = setTimeout(interference, 1700);
-
-let introAudio = null, audioEnabled = false, master = null;
-function setupAudio() {
-  const AC = window.AudioContext || window.webkitAudioContext;
-  if (!AC) return false;
-  introAudio = new AC();
-  const limiter = introAudio.createDynamicsCompressor();
-  limiter.threshold.value = -14; limiter.knee.value = 14; limiter.ratio.value = 8;
-  limiter.attack.value = .008; limiter.release.value = .24;
-  master = introAudio.createGain(); master.gain.value = .78;
-  master.connect(limiter); limiter.connect(introAudio.destination);
-  return true;
-}
-function soundEvent(kind, step=0) {
-  if (!audioEnabled || !introAudio || !master) return;
-  try {
-    const ac = introAudio, t = ac.currentTime + .03;
-    const note = (freq, at, duration, volume, wave="sine", endFreq=freq) => {
-      const o=ac.createOscillator(), g=ac.createGain(); o.type=wave;
-      o.frequency.setValueAtTime(Math.max(20,freq),at);
-      o.frequency.exponentialRampToValueAtTime(Math.max(20,endFreq),at+duration);
-      g.gain.setValueAtTime(.0001,at);
-      g.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),at+Math.min(.18,duration*.25));
-      g.gain.setTargetAtTime(.0001,at+duration*.66,Math.max(.06,duration*.12));
-      o.connect(g); g.connect(master); o.start(at); o.stop(at+duration+.2);
-    };
-    const rumble = (at, duration, volume) => {
-      const len=Math.ceil(ac.sampleRate*Math.min(duration,3));
-      const buffer=ac.createBuffer(1,len,ac.sampleRate), d=buffer.getChannelData(0);
-      for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
-      const src=ac.createBufferSource(), lp=ac.createBiquadFilter(), g=ac.createGain();
-      src.buffer=buffer; lp.type="lowpass"; lp.frequency.value=160; lp.Q.value=.6;
-      g.gain.setValueAtTime(.0001,at); g.gain.linearRampToValueAtTime(volume,at+.25);
-      g.gain.exponentialRampToValueAtTime(.0001,at+duration);
-      src.connect(lp); lp.connect(g); g.connect(master); src.start(at); src.stop(at+duration);
-    };
-    if(kind==="boot") {
-      rumble(t,2.7,.25);
-      note(38,t,2.6,.26,"sawtooth",63);
-      note(55,t+.1,2.6,.34,"sine",82);
-      note(110,t+.38,2.2,.16,"triangle",165);
-      note(220,t+.8,1.7,.1,"sine",440);
-      note(660,t+1.4,.75,.07,"triangle",990);
-      note(82,t+1.8,1.3,.25,"sine",41);
-    }
-    if(kind==="transition") {
-      note(58+step*5,t,1.0,.17,"sawtooth",85+step*7);
-      note(115+step*9,t+.1,.85,.14,"sine",172+step*10);
-      note(350+step*18,t+.25,.4,.045,"triangle",520+step*20);
-    }
-    if(kind==="converge") {
-      rumble(t,2.3,.32);
-      note(74,t,2.4,.34,"sawtooth",37);
-      note(55,t+.1,2.3,.42,"sine",41);
-      note(110,t+.24,1.9,.24,"triangle",220);
-      note(440,t+.55,1.5,.1,"sine",880);
-    }
-  } catch(e) { /* Audio may be unavailable in this browser. */ }
-}
-function begin(withSound) {
-  if (gate.classList.contains("hidden")) return;
-  audioEnabled = withSound;
-  if (withSound) {
-    try { if(setupAudio()) {introAudio.resume().then(()=>soundEvent("boot")).catch(()=>{});} }
-    catch(e) {audioEnabled=false;}
-  }
-  clearTimeout(interferenceTimer);
-  gate.classList.add("hidden");
-  run().catch(() => finish(true));
-}
-startSound.addEventListener("click",()=>begin(true));
-startSilent.addEventListener("click",()=>finish(true));
-
-/* ---------- WebGL ---------- */
-const VS = `attribute vec4 aA;attribute vec4 aB;attribute vec4 aR;uniform float uMix,uTime,uAspect,uScale,uSize,uDamage,uCollapse,uYaw,uPitch,uDpr;varying float vA,vT,vG,vC;
-void main(){float dl=aR.x*.45;float t=clamp((uMix-dl)/.55,0.,1.);t=t*t*(3.-2.*t);vec3 p=mix(aA.xyz,aB.xyz,t);p+=(aR.xyz-.5)*2.2*sin(3.14159*t);float tone=mix(aA.w,aB.w,t);
-float hk=fract(sin((aR.y*91.7+floor(uTime*2.5))*12.9898)*43758.5);float dm=step(1.-uDamage*.22,hk);p+=dm*(aR.xyz-.5)*.7;p.y-=dm*.15;
-p+=normalize(p+vec3(.001))*(uCollapse*uCollapse)*(3.5+aR.w*5.0);
-float cy=cos(uYaw),sy=sin(uYaw);p=vec3(cy*p.x+sy*p.z,p.y,-sy*p.x+cy*p.z);float cp=cos(uPitch),sp=sin(uPitch);p=vec3(p.x,cp*p.y-sp*p.z,sp*p.y+cp*p.z);
-float w=3.-p.z;float k=2.6/w;gl_Position=vec4(p.x*k*uScale/uAspect,p.y*k*uScale,0.,1.);vG=0.;
-gl_PointSize=2.1*uSize*k*uDpr;vT=tone*(.55+.45*(p.z+1.)*.5);vA=(1.-uCollapse)*(1.-dm*.65);vC=floor(mod(aR.z*8.+floor(uTime*(2.+aR.x*3.)),8.));}`;
-const FS = `precision mediump float;uniform sampler2D uAtlas;varying float vA,vT,vG,vC;
-void main(){float a;if(vG>.5){vec2 c=vec2(mod(vC,4.),floor(vC/4.));a=texture2D(uAtlas,(c+gl_PointCoord)/vec2(4.,2.)).r;}else{a=smoothstep(.5,.15,length(gl_PointCoord-.5));}
-vec3 col=mix(vec3(.78,.86,.93),vec3(1.,1.,1.),vT);gl_FragColor=vec4(col*a*vA*(.35+vT*.9),1.);}`;
-function initGL() {
-  try { gl = cv.getContext("webgl", { antialias: false, alpha: true }); } catch (e) { gl = null; }
-  if (!gl) return false;
-  const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw 0; return o; };
-  try {
-    prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw 0;
-  } catch (e) { gl = null; return false; }
-  gl.useProgram(prog);
-  ["uMix", "uTime", "uAspect", "uScale", "uSize", "uDamage", "uCollapse", "uYaw", "uPitch", "uDpr", "uAtlas"].forEach((n) => (U[n] = gl.getUniformLocation(prog, n)));
-  const R = new Float32Array(N * 4); for (let i = 0; i < R.length; i++) R[i] = rnd();
-  const mk = (name, data, usage) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, usage); const l = gl.getAttribLocation(prog, name); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, 4, gl.FLOAT, false, 0, 0); return b; };
-  bufA = mk("aA", shapes.noise, gl.DYNAMIC_DRAW); bufB = mk("aB", shapes.noise, gl.DYNAMIC_DRAW); mk("aR", R, gl.STATIC_DRAW);
-  const at = document.createElement("canvas"); at.width = 128; at.height = 64; const c = at.getContext("2d");
-  c.fillStyle = "#fff"; c.font = "bold 24px monospace"; c.textAlign = "center"; c.textBaseline = "middle";
-  "01AF7<#/".split("").forEach((ch, i) => c.fillText(ch, (i % 4) * 32 + 16, Math.floor(i / 4) * 32 + 17));
-  const tx = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tx); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, at);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.uniform1i(U.uAtlas, 0); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
-  cv.addEventListener("webglcontextlost", (e) => { e.preventDefault(); gl = null; ctx2 = cv.getContext("2d"); }, false);
-  return true;
-}
-function setPair(a, b) { A = shapes[a]; Bf = shapes[b]; if (gl) { gl.bindBuffer(gl.ARRAY_BUFFER, bufA); gl.bufferSubData(gl.ARRAY_BUFFER, 0, A); gl.bindBuffer(gl.ARRAY_BUFFER, bufB); gl.bufferSubData(gl.ARRAY_BUFFER, 0, Bf); } }
-
-/* ---------- 렌더 ---------- */
-let dpr = 1, W = 0, H = 0;
-function resize() {
-  dpr = Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2); W = root.clientWidth; H = root.clientHeight;
-  for (const c of [cv, rad]) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
-  if (gl) gl.viewport(0, 0, cv.width, cv.height);
-}
-const hash = (n) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
-function drawGL(time) {
-  gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
-  const asp = W / H, sc = asp < 1 ? .42 * asp * 1.15 : .42;
-  gl.uniform1f(U.uMix, S.mix); gl.uniform1f(U.uTime, time); gl.uniform1f(U.uAspect, asp); gl.uniform1f(U.uScale, sc);
-  gl.uniform1f(U.uSize, 1); gl.uniform1f(U.uDamage, S.damage); gl.uniform1f(U.uCollapse, S.collapse);
-  gl.uniform1f(U.uYaw, S.yaw); gl.uniform1f(U.uPitch, S.pitch); gl.uniform1f(U.uDpr, dpr);
-  gl.drawArrays(gl.POINTS, 0, N);
-}
-function drawCPU(time) {
-  const c = ctx2 || (ctx2 = cv.getContext("2d")); if (!c || !A) return;
-  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); c.scale(dpr, dpr);
-  const n = Math.min(N, 1700), sc = Math.min(H * .42, W * .42 * 1.15), cx = W / 2, cy = H / 2;
-  const cyw = Math.cos(S.yaw), syw = Math.sin(S.yaw), cp = Math.cos(S.pitch), sp = Math.sin(S.pitch);
-  c.font = "10px monospace";
-  for (let i = 0; i < n; i++) {
-    const o = i * 4, r1 = hash(i + 1), r2 = hash(i + 7.3), r3 = hash(i + 19.1);
-    const dl = r1 * .45; let t = Math.min(1, Math.max(0, (S.mix - dl) / .55)); t = t * t * (3 - 2 * t);
-    const sc2 = Math.sin(Math.PI * t) * 2.2;
-    let x = A[o] + (Bf[o] - A[o]) * t + (r1 - .5) * sc2, y = A[o + 1] + (Bf[o + 1] - A[o + 1]) * t + (r2 - .5) * sc2, z = A[o + 2] + (Bf[o + 2] - A[o + 2]) * t + (r3 - .5) * sc2;
-    const tone = A[o + 3] + (Bf[o + 3] - A[o + 3]) * t;
-    const burst = S.collapse * S.collapse * (3.5 + r2 * 5); const norm=Math.hypot(x,y,z)||1; x+=x/norm*burst; y+=y/norm*burst; z+=z/norm*burst;
-    let x2 = cyw * x + syw * z, z2 = -syw * x + cyw * z, y2 = cp * y - sp * z2, z3 = sp * y + cp * z2;
-    const k = 2.6 / (3 - z3), a = (1 - S.collapse) * (.3 + tone * .6);
-    if (a <= .02) continue;
-    c.fillStyle = `rgba(236,243,255,${a})`;
-    const px = cx + x2 * k * sc, py = cy - y2 * k * sc;
-    c.fillRect(px, py, 1.5, 1.5);
-  }
-}
-function radar(time) {
-  const c = rad.getContext("2d"); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, rad.width, rad.height); c.scale(dpr, dpr);
-  const cx = W / 2, cy = H / 2, R = Math.min(W, H) * .4; c.strokeStyle = "rgba(255,100,31,.55)"; c.fillStyle = "rgba(255,178,95,.75)"; c.lineWidth = 1; c.font = "10px monospace"; c.textAlign = "center";
-  [1, .82, .6, .38].forEach((f, i) => { c.beginPath(); c.setLineDash(i === 1 ? [3, 7] : i === 3 ? [1, 4] : []); c.arc(cx, cy, R * f, 0, PI2); c.stroke(); }); c.setLineDash([]);
-  for (let d = 0; d < 360; d += 10) { const a = (d - 90) * Math.PI / 180, l = d % 30 ? 5 : 11; c.beginPath(); c.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); c.lineTo(cx + Math.cos(a) * (R + l), cy + Math.sin(a) * (R + l)); c.stroke(); if (!(d % 30)) c.fillText(String(d).padStart(3, "0"), cx + Math.cos(a) * (R + 24), cy + Math.sin(a) * (R + 24) + 3); }
-  c.beginPath(); c.moveTo(cx - R, cy); c.lineTo(cx + R, cy); c.moveTo(cx, cy - R); c.lineTo(cx, cy + R); c.strokeStyle = "rgba(255,100,31,.22)"; c.stroke();
-  const sw = (time * .9) % PI2; for (let i = 0; i < 28; i++) { const a = sw - i * .028; c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, R * .98, a - .03, a); c.closePath(); c.fillStyle = `rgba(255,100,31,${.2 * (1 - i / 28)})`; c.fill(); }
-  c.fillStyle = "rgba(255,210,150,.9)";
-  for (let i = 0; i < 9; i++) { const a = hash(i + 3) * PI2, r = R * (.2 + hash(i + 11) * .75), vis = 1 - ((sw - a + PI2 * 4) % PI2) / PI2; c.globalAlpha = Math.max(.15, vis); c.fillRect(cx + Math.cos(a) * r - 2, cy + Math.sin(a) * r - 2, 4, 4); } c.globalAlpha = 1;
-}
-
-/* ---------- 루프 ---------- */
-let t0 = performance.now(), raf = 0, mode = "gl";
-addEventListener("pointermove", (e) => { S.mx = e.clientX / innerWidth - .5; S.my = e.clientY / innerHeight - .5; });
-function loop() {
-  if (dead) return; raf = requestAnimationFrame(loop);
-  const time = (performance.now() - t0) / 1000;
-  S.sx += (S.mx - S.sx) * .06; S.sy += (S.my - S.sy) * .06;
-  S.yaw = (reduce ? 0 : Math.sin(time * .55) * S.amp + S.spin * time * .4) + S.sx * .5; S.pitch = S.sy * .3;
-  if (mode === "show") { if (gl) drawGL(time); else drawCPU(time); }
-  if (auth.classList.contains("on")) radar(time);
-}
-
-/* ---------- 연출 ---------- */
-async function type(lines, speed) {
-  log.textContent = ""; log.appendChild(cur);
-  for (const ln of lines) {
-    for (let i = 0; i < ln.length; i++) {
-      if (dead) return;
-      const bad = ln.length > 12 && rnd() < .07 && !reduce; cur.before(document.createTextNode(bad ? "█▒░▓"[Math.floor(rnd() * 4)] : ln[i]));
-      if (bad) { await sleep(speed * 3); cur.previousSibling.nodeValue = ln[i]; }
-      if (i % 3 === 0) tick(); await sleep(speed);
-    }
-    cur.before(document.createTextNode("\n")); await sleep(speed * 9);
-  }
-}
-const hud = (name, sub) => { lab.innerHTML = ""; el("span", "", lab, name); el("em", "", lab, sub); };
-let hudT = 0;
-function hudStart(label) {
-  clearInterval(hudT);
-  hl.classList.add("on"); hr.classList.add("on"); lab.classList.add("on");
-  hudT = setInterval(() => {
-    const f = (v) => (v >= 0 ? "+" : "") + v.toFixed(3);
-    hl.innerHTML = `<b>SIMULATED TELEMETRY</b><br>X ${f(Math.sin(performance.now() / 700) * 1.2)}<br>Y ${f(Math.cos(performance.now() / 530))}<br>Z ${f(Math.sin(performance.now() / 910) * .8)}<br>SCAN ${String(Math.floor(rnd() * 512)).padStart(3, "0")}/512`;
-    hr.innerHTML = `ID <b>${(0xA000 + Math.floor(rnd() * 0xFFF)).toString(16).toUpperCase()}</b><br>SUBJECT : UNCONFIRMED<br>MATCH ${(S.mix * 100).toFixed(1)}%<br>${label()}`;
-  }, 110);
-}
-async function morph(a, b, ms) {
-  setPair(a, b); S.mix = 0; const s = performance.now();
-  for (;;) { if (dead) return; const p = Math.min(1, (performance.now() - s) / ms); S.mix = reduce ? 1 : p; if (p >= 1 || reduce) break; await frame(); }
-}
-const SYSTEM_LINES = [
-  "NRS / CENTRAL DATA AUTHORITY", "INITIALIZING SENSORY ARRAY", "VERIFYING UNKNOWN TIMELINE",
-  "SIGNAL INTERFERENCE DETECTED", "CONNECTING INTER-TIMELINE RELAY", "CONSCIOUSNESS SYNC : STABLE",
-  "ARCHIVE FRAGMENT 001 : RESTORED", "TIMELINE BRANCH 008 : FOUND", "ACCESS PERMISSION : PENDING",
-  "RECONSTRUCTING ARCHIVE INDEX", "ANOMALY DETECTED / RECHECKING", "MEMORY CHANNELS : ONLINE",
-  "TRANSMISSION RECEIVED", "NRS AUTHORIZATION CONFIRMED", "LOADING ARCHIVED RECORDS"
-];
-let cascadeTimer = 0;
-function startCascade() {
-  cascade.classList.add("on");
-  let n=0;
-  const add=()=>{
-    if(dead) return;
-    const line=el("span","",cascade, SYSTEM_LINES[n % SYSTEM_LINES.length]);
-    line.style.left=(4+rnd()*67)+"%";
-    line.style.top=(8+rnd()*77)+"%";
-    line.style.animationDuration=(.8+rnd()*1.1)+"s";
-    setTimeout(()=>line.remove(),2200);
-    n++;
-  };
-  for(let i=0;i<12;i++) add();
-  cascadeTimer=setInterval(()=>{for(let i=0;i<3;i++)add();},125);
-}
-function stopCascade() {clearInterval(cascadeTimer);cascade.classList.remove("on");cascade.replaceChildren();}
-async function phase2() {
-  mode="show"; phase.textContent="PHASE 02 — 감각 재구성"; log.textContent="";
-  hudStart(()=>"TIMELINE LINK : SYNCHRONIZING");
-  const sequence=reduce?["wire"]:seen?["head","wire"]:["brain","head","wire"];
-  let previous="noise";
-  for(let i=0;i<sequence.length;i++){
-    if(dead)return;
-    S.amp=.12; S.spin=.17;
-    hud(["NEURAL PATTERN","SUBJECT RECONSTRUCTION","INTER-TIMELINE STRUCTURE"][seen?i+1:i]||"INTER-TIMELINE STRUCTURE", "NRS / 감각 활성화 진행 중");
-    soundEvent("transition",i);
-    await morph(previous,sequence[i],reduce?1:seen?850:1550);
-    await sleep(reduce?40:seen?250:700);
-    previous=sequence[i];
-  }
-  if(dead)return;
-  hud("TIMELINE CONVERGENCE","감각 동기화 완료 / 확산 시작");
-  soundEvent("converge"); startCascade();
-  const start=performance.now(), duration=reduce?1:seen?600:1050;
-  while(!dead){const q=Math.min(1,(performance.now()-start)/duration);S.collapse=reduce?1:q;S.damage=.2*q;if(q>=1)break;await frame();}
-  await sleep(reduce?30:450);
-}
-async function phase3() {
-  if(dead)return;
-  clearInterval(hudT); hl.classList.remove("on");hr.classList.remove("on");lab.classList.remove("on");
-  cv.style.opacity=0;log.textContent="";
-  phase.textContent="PHASE 03 — 아카이브 인증";auth.classList.add("on");mode="idle";
-  const duration=reduce?150:seen?650:1700,start=performance.now();
-  while(!dead){const q=Math.min(1,(performance.now()-start)/duration);t3.textContent=`ARCHIVE CONNECTION ${Math.round(q*100)}% / NRS : ONLINE`;if(q>=1)break;await frame();}
-  if(dead)return;
-  t3.textContent="연결 완료 / 기록 보관소 진입";
-  await sleep(reduce?50:seen?200:650);
-  finish(false);
-}
-async function run() {
-  phase.textContent="PHASE 01 — 초기 연결";
-  const L=seen?["NRS / CENTRAL ARCHIVE", "타임라인 연결 재설정 중..."]:
-    ["NRS / CENTRAL DATA AUTHORITY", "감각 시스템 초기화 중...", "타임라인 신호 탐지...", "시스템 동기화 시작..."];
-  await type(L,reduce?1:seen?7:13);
-  if(dead)return;
-  await sleep(reduce?30:seen?100:300);
-  await phase2();if(dead)return;await phase3();
-}
-function finish(fromSkip) {
-  if (dead) return; dead = true; cancelSleep.forEach((f) => f()); clearInterval(hudT); stopCascade(); cancelAnimationFrame(raf);
-  try { localStorage.setItem("aegis_intro_seen", "1"); } catch (e) {}
-  const cb = onDone; onDone = null; root.classList.add("out"); tick();
-  setTimeout(() => { try { if (gl) gl.getExtension("WEBGL_lose_context")?.loseContext(); } catch (e) {} root.remove(); }, 800);
-  if (introAudio) { try { introAudio.close(); } catch(e) {} introAudio=null; }
-  if (cb) { try { cb(); } catch(e) { console.error("AEGIS archive transition failed:",e); const boot=document.getElementById("boot"), app=document.getElementById("mainApp"); if(boot) boot.classList.add("hidden"); if(app) app.classList.remove("hidden"); } }
-}
-skip.addEventListener("click", () => finish(true));
-
-addEventListener("keydown", (e) => { if (!dead && e.key === "Escape") finish(true); });
-
-window.AegisIntro = {
-  start(cb) {
-    onDone = cb; build(); document.body.appendChild(root); resize(); addEventListener("resize", resize);
-    initGL();
-    setPair("noise", "noise"); resize(); loop(); skip.focus({ preventScroll: true });
-    startSound.focus({ preventScroll: true });
-  }
-};
+function finish(){if(dead)return;dead=true;timers.forEach(clearTimeout);cancelAnimationFrame(raf);removeEventListener('resize',resize);try{localStorage.setItem('aegis_intro_seen','1');}catch(e){}if(audio){audio.close().catch(()=>{});audio=null;}root.classList.add('out');later(()=>root.remove(),800);const cb=onDone;onDone=null;if(cb){try{cb();}catch(e){console.error('NRS archive transition failed:',e);document.getElementById('boot')?.classList.add('hidden');document.getElementById('mainApp')?.classList.remove('hidden');}}}
+go.addEventListener('click',()=>begin(true));silent.addEventListener('click',finish);skip.addEventListener('click',finish);
+addEventListener('keydown',e=>{if(!dead&&e.key==='Escape')finish();});
+window.AegisIntro={start(cb){onDone=cb;document.body.appendChild(root);resize();addEventListener('resize',resize);raf=requestAnimationFrame(draw);go.focus({preventScroll:true});}};
 })();
