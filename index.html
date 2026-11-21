@@ -36,15 +36,11 @@
     NEW TIMELINE REGISTRATION
   </div>
 
-  <label for="teamName">
-    팀 번호 / 이름
-  </label>
+  <label for="teamNumber">TEAM NUMBER (숫자만)</label>
+  <input id="teamNumber" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="예: 1 → 네르사 1팀" />
 
-  <input
-    id="teamName"
-    autocomplete="off"
-    placeholder="예: 네르사 1팀 / 신지안"
-  />
+  <label for="authorName">NAME</label>
+  <input id="authorName" autocomplete="off" placeholder="예: 신지안" />
 
   <label for="messageText">
     메시지
@@ -105,7 +101,7 @@
       <footer>written by. hamge</footer>
     </section>
   </main>
-  <section id="reader" class="reader hidden"><div class="reader-box"><button id="readerClose" class="close-btn">×</button><div id="decrypt" class="decrypt"></div><div id="messageView" class="hidden"><p id="viewMeta" class="kicker"></p><h2 id="viewTitle"></h2><pre id="viewMessage"></pre><div id="adminTools" class="admin-tools hidden"><button id="editButton" class="utility-btn">수정</button><button id="pinButton" class="utility-btn">고정/해제</button><button id="deleteButton" class="danger-btn">삭제</button></div></div></div></section>
+  <section id="reader" class="reader hidden"><div class="reader-box"><button id="readerClose" class="close-btn">×</button><div id="decrypt" class="decrypt"></div><div id="messageView" class="hidden"><p id="viewMeta" class="kicker"></p><h2 id="viewTitle"></h2><pre id="viewMessage"></pre><div id="adminTools" class="admin-tools hidden"><button id="editButton" class="utility-btn">수정</button><button id="pinButton" class="utility-btn">고정/해제</button><button id="protectButton" class="utility-btn">보호 지정/해제</button><button id="deleteButton" class="danger-btn">삭제</button></div></div></div></section>
   <audio id="clickSound" preload="auto"><source src="data:audio/wav;base64,UklGRpYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YXIAAAD///39/Pz8+/r6+fn49/f29fX09PPz8vLy8PDv7+7u7Ozr6+np6Ojn5+bm5eXk5OPj4uLh4eDg39/f3t7e3d3c3Nzb29ra2dnY2NfX1tbW1dXV1NTU09PT0tLS0dHR0NDQz8/Pzs7Ozc3NzMzM" type="audio/wav" /></audio>
   <audio id="sendSound" preload="auto"><source src="data:audio/wav;base64,UklGRrYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZIAAADAwMPEyMzQ1Njc5Ojs8PDxAPDw8Ojo6ODg4NjY2NDQ0MjIyMDAwLi4uLCwsKioqKCgoJiYmJCQkIiIiICAgIiIiJCQkJiYmKCgoKioqLCwsLi4uMDAwMjIyNDQ0NjY2ODg4Ojo6PDw8QEBAQkJCQ0ND" type="audio/wav" /></audio>
   <script src="./script.js"></script>

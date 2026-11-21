@@ -263,8 +263,8 @@ function renderRecords() {
 
   filtered.sort((a, b) =>
 
-    a.is_pinned !== b.is_pinned
-      ? Number(b.is_pinned) - Number(a.is_pinned)
+    (a.is_protected | a.is_pinned) !== (b.is_protected | b.is_pinned)
+      ? (b.is_protected | b.is_pinned) - (a.is_protected | a.is_pinned)
       : asc
         ? a.id - b.id
         : b.id - a.id
@@ -290,9 +290,11 @@ function renderRecords() {
         <div class="record-no">
           TIME LINE #${timelineNo(item.id)}
           ${
-            item.is_pinned
-              ? "<span class='pin-label'>★ FIXED</span>"
-              : ""
+            item.is_protected
+              ? "<span class='pin-label'>◆ PRIORITY ARCHIVE</span>"
+              : item.is_pinned
+                ? "<span class='pin-label'>★ FIXED</span>"
+                : ""
           }
         </div>
 
@@ -472,10 +474,12 @@ $("sendButton").addEventListener(
   "click",
   async () => {
 
-    const team_name =
-      $("teamName")
-        .value
-        .trim() || "UNKNOWN TIMELINE";
+    const team_number = $("teamNumber").value.replace(/\D/g, "");
+    const author_name = $("authorName").value.trim();
+    if (!author_name) {
+      $("sendStatus").textContent = "이름을 입력해 주세요.";
+      return;
+    }
 
     const message =
       $("messageText")
@@ -501,7 +505,8 @@ $("sendButton").addEventListener(
         {
           method: "POST",
           body: JSON.stringify({
-            team_name,
+            team_number,
+            author_name,
             message
           })
         }
@@ -510,6 +515,7 @@ $("sendButton").addEventListener(
       play("sendSound");
 
       $("messageText").value = "";
+      $("authorName").value = "";
 
       $("sendStatus").textContent =
         "등록 완료.";
@@ -804,5 +810,35 @@ $("backupButton").addEventListener(
 
   }
 );
+$("protectButton").addEventListener("click", async () => {
+  if (!currentRecord) return;
+  const on = !currentRecord.is_protected;
+  let confirmText;
+  if (!on) {
+    confirmText = prompt("보호 해제: RELEASE 를 입력하세요.");
+    if (confirmText !== "RELEASE") return;
+  }
+  try {
+    await api("/api/admin/protect", { method: "POST", body: JSON.stringify({ id: currentRecord.id, protected: on, confirm: confirmText }) });
+    $("reader").classList.add("hidden");
+    await loadRecords();
+  } catch (e) { alert(e.message); }
+});
+
+$("restoreButton").addEventListener("click", () => $("restoreFile").click());
+$("restoreFile").addEventListener("change", async (event) => {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (data.protocol !== "AEGIS" || !Array.isArray(data.messages)) throw new Error("AEGIS 백업 파일이 아닙니다.");
+    if (!confirm(`${data.messages.length}건을 병합 복원합니다. (기존 기록은 삭제·덮어쓰지 않음) 진행할까요?`)) return;
+    const r = await api("/api/admin/restore", { method: "POST", body: JSON.stringify({ messages: data.messages }) });
+    $("backupStatus").textContent = `복원 완료: ${r.added}건 추가, ${r.skipped}건 건너뜀`;
+    await loadRecords();
+  } catch (e) { $("backupStatus").textContent = e.message || "복원에 실패했습니다."; }
+});
+
 createAegisCursorHud();
 bootSequence();
