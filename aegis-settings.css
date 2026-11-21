@@ -1,0 +1,31 @@
+/* Admin-only controls, no changes to the public archive layout. */
+.nrs-visual-settings{margin:16px 0;padding:12px;border:1px solid rgba(255,171,91,.3);border-radius:9px;background:rgba(28,19,13,.5);color:#f8d6aa}
+.nrs-settings-heading{display:flex;justify-content:space-between;width:100%;padding:8px 5px;background:transparent;color:#ffd7a2;border:0;font-weight:700;cursor:pointer;text-align:left}
+.nrs-settings-body[hidden]{display:none!important}.nrs-settings-body>p{font-size:11px;opacity:.75;line-height:1.6}.nrs-settings-actions{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.nrs-settings-actions button{border:1px solid rgba(255,170,90,.35);background:rgba(255,149,64,.08);color:#ffd7a2;padding:7px 9px;border-radius:5px;cursor:pointer;font-size:11px}.nrs-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.nrs-setting{display:flex;align-items:center;gap:7px;font-size:12px;line-height:1.4;padding:7px 4px;cursor:pointer}.nrs-setting input{accent-color:#ffab65;flex:none}
+@media(max-width:750px){.nrs-settings-grid{grid-template-columns:1fr}}
+html.nrs-off-radar #mainApp .nrs-detected{display:none!important;animation:none!important}
+html.nrs-off-trails #mainApp #nrsEffectsCanvas{display:none!important;animation:none!important}
+html.nrs-off-target #mainApp .nrs-target{display:none!important;animation:none!important}
+html.nrs-off-decrypt #mainApp .nrs-decrypting::before,html.nrs-off-decrypt #mainApp .nrs-decrypting::after{display:none!important;animation:none!important}
+html.nrs-off-sync #mainApp .nrs-sync-pulse{display:none!important;animation:none!important}
+html.nrs-off-interference #mainApp .nrs-interference{display:none!important;animation:none!important}
+html.nrs-off-iris #mainApp .nrs-observatory-iris{display:none!important;animation:none!important}
+html.nrs-off-relay #mainApp .nrs-data-relay-line{display:none!important;animation:none!important}
+html.nrs-off-particles #mainApp .nrs-data-particle{display:none!important;animation:none!important}
+html.nrs-off-stamp #mainApp .nrs-verified-stamp{display:none!important;animation:none!important}
+html.nrs-off-parallax #mainApp .nrs-depth-field{display:none!important;animation:none!important}
+html.nrs-off-packets #mainApp .nrs-packet{display:none!important;animation:none!important}
+html.nrs-off-sheen #mainApp .nrs-glass-sheen{display:none!important;animation:none!important}
+html.nrs-off-ring #mainApp .nrs-decrypt-ring{display:none!important;animation:none!important}
+html.nrs-off-triangle #mainApp .nrs-triangulation{display:none!important;animation:none!important}
+html.nrs-off-jump #mainApp .nrs-sector-jump{display:none!important;animation:none!important}
+html.nrs-off-materialize #mainApp .nrs-materializing{display:none!important;animation:none!important}
+html.nrs-off-echo #mainApp .nrs-p5-echo{display:none!important;animation:none!important}
+html.nrs-off-clearance #mainApp .nrs-p5-clearance{display:none!important;animation:none!important}
+html.nrs-off-beacon #mainApp .nrs-p5-beacon{display:none!important;animation:none!important}
+html.nrs-off-grid #mainApp .nrs-p5-grid{display:none!important;animation:none!important}
+html.nrs-off-optical #mainApp .nrs-p6-optical{display:none!important;animation:none!important}
+html.nrs-off-circuit #mainApp .nrs-p6-circuit{display:none!important;animation:none!important}
+html.nrs-off-reactive #mainApp .archive-records .record::after{display:none!important;animation:none!important}
+html.nrs-off-expansion #mainApp .nrs-p6-expansion{display:none!important;animation:none!important}
+html.nrs-off-reconnect #mainApp .radar-core.nrs-p6-reconnect{display:none!important;animation:none!important}

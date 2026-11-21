@@ -16,6 +16,7 @@
   const ctx = canvas.getContext('2d');
   let width=0,height=0,dpr=1,prevAngle=null,prevTime=0,lastPulse=0,frameNo=0;
   const trails=[];
+  const fx=k=>window.NRSVisualSettings?.enabled(k)!==false;
   function resize(){
     const r=stage.getBoundingClientRect();width=r.width;height=r.height;
     dpr=Math.min(devicePixelRatio||1,1.5);
@@ -51,7 +52,7 @@
     stage.style.setProperty('--nrs-distort-x','50%');
     stage.style.setProperty('--nrs-distort-y',`${100*centerY/Math.max(height,1)}%`);
     // Rotating radar detection: softly illuminate only cards close to the scan direction.
-    if(frameNo%4===0){
+    if(fx('radar')&&frameNo%4===0){
       const scan=((time/19000*360)%360+360)%360;
       records.querySelectorAll('.record').forEach(card=>{
         const x=parseFloat(card.style.getPropertyValue('--pos-x'))||0;
@@ -65,7 +66,7 @@
       });
     }
     // Orbital light trails: only a few faint dots, never cover labels.
-    if(frameNo%3===0 && speed>.06){
+    if(fx('trails')&&frameNo%3===0 && speed>.06){
       const radius=Math.min(width*.36,height*.38);
       const a=angle*Math.PI/180;
       trails.push({x:centerX+Math.cos(a)*radius,y:centerY+Math.sin(a)*radius,life:1});
@@ -91,20 +92,21 @@
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const mobile=matchMedia('(max-width: 750px)');
   const active=()=>!app.classList.contains('hidden')&&!reduced.matches&&!document.hidden;
+  const fx=k=>window.NRSVisualSettings?.enabled(k)!==false;
   const overlay=document.createElement('div');overlay.className='nrs-observation-overlay';overlay.setAttribute('aria-hidden','true');stage.append(overlay);
   const iris=document.createElement('div');iris.className='nrs-observatory-iris';iris.setAttribute('aria-hidden','true');stage.append(iris);
   // Telemetry status panel and rotating system log removed at user request.
   // Sync pulse: slow, subtle and not on the message text.
-  setInterval(()=>{if(!active()||mobile.matches||!reader.classList.contains('hidden'))return;const el=document.createElement('i');el.className='nrs-sync-pulse';overlay.append(el);setTimeout(()=>el.remove(),2500);},19000);
+  setInterval(()=>{if(!fx('sync')||!active()||mobile.matches||!reader.classList.contains('hidden'))return;const el=document.createElement('i');el.className='nrs-sync-pulse';overlay.append(el);setTimeout(()=>el.remove(),2500);},19000);
   // Very rare scan interference; confined to the backdrop, not the reader.
-  setInterval(()=>{if(!active()||mobile.matches||!reader.classList.contains('hidden'))return;const el=document.createElement('i');el.className='nrs-interference';overlay.append(el);setTimeout(()=>el.remove(),700);},29000);
+  setInterval(()=>{if(!fx('interference')||!active()||mobile.matches||!reader.classList.contains('hidden'))return;const el=document.createElement('i');el.className='nrs-interference';overlay.append(el);setTimeout(()=>el.remove(),700);},29000);
   // Per-record coordinate readouts removed at user request.
-  function burst(x,y){if(!active()||mobile.matches)return;
+  function burst(x,y){if(!fx('particles')||!active()||mobile.matches)return;
     for(let i=0;i<11;i++){const p=document.createElement('i');p.className='nrs-data-particle';p.style.left=x+'px';p.style.top=y+'px';p.style.setProperty('--dx',`${(Math.random()-.5)*130}px`);p.style.setProperty('--dy',`${(Math.random()-.5)*110}px`);overlay.append(p);setTimeout(()=>p.remove(),850);}
   }
   // Link from the clicked record to the core, then absorb small particles.
   records.addEventListener('click',e=>{
-    const card=e.target.closest('.record');if(!card||!active()||mobile.matches)return;
+    const card=e.target.closest('.record');if(!card||!fx('relay')||!active()||mobile.matches)return;
     const r=card.getBoundingClientRect(),s=stage.getBoundingClientRect();
     const x=r.left+r.width/2-s.left,y=r.top+r.height/2-s.top;
     const destX=s.width/2,destY=s.height/2;
@@ -126,7 +128,7 @@
     const hide=()=>{clearTimeout(finishTimer);stamp.classList.remove('nrs-stamp-show');};
     const schedule=()=>{
       hide();
-      if(reader.classList.contains('hidden')||messageView.classList.contains('hidden'))return;
+      if(!fx('stamp')||reader.classList.contains('hidden')||messageView.classList.contains('hidden'))return;
       finishTimer=setTimeout(()=>{
         if(!reader.classList.contains('hidden')&&!messageView.classList.contains('hidden')&&messageText.textContent.trim())
           stamp.classList.add('nrs-stamp-show');
@@ -148,6 +150,7 @@
   if(!app||!stage||!records||!reader||!world)return;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:750px)');
   const canAnimate=()=>!reduced.matches&&!document.hidden&&!app.classList.contains('hidden');
+  const fx=k=>window.NRSVisualSettings?.enabled(k)!==false;
   const depth=document.createElement('div');depth.className='nrs-depth-field';depth.setAttribute('aria-hidden','true');
   stage.insertBefore(depth,stage.firstChild);
   // Ambient packets: fixed low count, CSS animations, no per-frame DOM writes.
@@ -162,7 +165,7 @@
     depth.append(packet);
   }
   stage.addEventListener('pointermove',event=>{
-    if(!canAnimate()||mobile.matches||event.pointerType==='touch')return;
+    if(!fx('parallax')||!canAnimate()||mobile.matches||event.pointerType==='touch')return;
     const rect=stage.getBoundingClientRect();
     const x=(event.clientX-rect.left)/rect.width-.5,y=(event.clientY-rect.top)/rect.height-.5;
     depth.style.setProperty('--nrs-parallax-x',`${(x*13).toFixed(1)}px`);
@@ -181,7 +184,7 @@
     let openTimer;
     new MutationObserver(()=>{
       if(reader.classList.contains('hidden')){clearTimeout(openTimer);box.classList.remove('nrs-materializing');return;}
-      if(!canAnimate())return;
+      if(!fx('materialize')||!canAnimate())return;
       box.classList.remove('nrs-materializing');void box.offsetWidth;box.classList.add('nrs-materializing');
       clearTimeout(openTimer);openTimer=setTimeout(()=>box.classList.remove('nrs-materializing'),470);
     }).observe(reader,{attributes:true,attributeFilter:['class']});
@@ -192,7 +195,7 @@
   let triangleTimer,jumpTimer;
   records.addEventListener('click',event=>{
     const card=event.target.closest('.record');
-    if(!card||!canAnimate()||mobile.matches)return;
+    if(!card||!fx('triangle')||!canAnimate()||mobile.matches)return;
     const candidates=[...records.querySelectorAll('.record')].filter(node=>node!==card);
     if(candidates.length<2)return;
     const sr=stage.getBoundingClientRect();
@@ -209,7 +212,7 @@
   // Existing pager is created dynamically by script.js. Observe clicks without intercepting them.
   document.addEventListener('click',event=>{
     const button=event.target.closest('#nrsArchivePager button');
-    if(!button||button.disabled||!canAnimate())return;
+    if(!button||button.disabled||!fx('jump')||!canAnimate())return;
     jump.classList.remove('active');void jump.offsetWidth;jump.classList.add('active');
     clearTimeout(jumpTimer);jumpTimer=setTimeout(()=>jump.classList.remove('active'),680);
   },true);
@@ -227,13 +230,14 @@
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const mobile=matchMedia('(max-width:750px)');
   const enabled=()=>!reduced.matches&&!document.hidden&&!app.classList.contains('hidden');
+  const fx=k=>window.NRSVisualSettings?.enabled(k)!==false;
   const timers=new Set();
   const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);fn();},ms);timers.add(id);return id;};
   const layer=document.createElement('div');layer.className='nrs-p5-layer';layer.setAttribute('aria-hidden','true');stage.append(layer);
   const grid=document.createElement('div');grid.className='nrs-p5-grid';grid.setAttribute('aria-hidden','true');layer.append(grid);
   let gridTimer;
   function reconstruct(){
-    if(!enabled()||mobile.matches)return;
+    if(!fx('grid')||!enabled()||mobile.matches)return;
     grid.classList.remove('nrs-p5-rebuild');void grid.offsetWidth;grid.classList.add('nrs-p5-rebuild');
     clearTimeout(gridTimer);gridTimer=later(()=>grid.classList.remove('nrs-p5-rebuild'),750);
   }
@@ -263,7 +267,7 @@
   if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(stage);resize();
   function drawEcho(now){
     requestAnimationFrame(drawEcho);
-    if(!context||!enabled()||mobile.matches||!reader.classList.contains('hidden'))return;
+    if(!fx('echo')||!context||!enabled()||mobile.matches||!reader.classList.contains('hidden')){context?.clearRect(0,0,cw,ch);return;}
     if(now-lastEcho<90)return;lastEcho=now;
     const world=document.getElementById('archiveWorld');
     const angle=parseFloat(world?.style.getPropertyValue('--scene-angle'))||0;
@@ -299,7 +303,7 @@
     if(reader.classList.contains('hidden')){
       token++;clearTimeout(clearanceTimer);clearTimeout(decodeTimer);clearance.classList.remove('active');restoreTitle();return;
     }
-    if(!enabled())return;
+    if(!fx('clearance')||!enabled())return;
     if(!messageView.classList.contains('hidden'))return;
     clearance.classList.remove('active');void clearance.offsetWidth;clearance.classList.add('active');
     clearTimeout(clearanceTimer);clearanceTimer=later(()=>clearance.classList.remove('active'),1050);
@@ -309,7 +313,7 @@
     if(messageView.classList.contains('hidden')||reader.classList.contains('hidden')){
       token++;clearTimeout(decodeTimer);restoreTitle();return;
     }
-    if(!enabled())return;
+    if(!fx('reconstruct')||!enabled())return;
     restoreTitle();
     const original=title.textContent||'';
     if(!original)return;
@@ -343,6 +347,7 @@
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const mobile=matchMedia('(max-width: 750px)');
   const running=()=>!reduced.matches&&!document.hidden&&!app.classList.contains('hidden');
+  const fx=k=>window.NRSVisualSettings?.enabled(k)!==false;
   const optical=document.createElement('i');optical.className='nrs-p6-optical';optical.setAttribute('aria-hidden','true');box.append(optical);
   const circuit=document.createElement('i');circuit.className='nrs-p6-circuit';circuit.setAttribute('aria-hidden','true');box.append(circuit);
   const expansion=document.createElement('i');expansion.className='nrs-p6-expansion';expansion.setAttribute('aria-hidden','true');stage.append(expansion);
@@ -356,14 +361,14 @@
     if(open===wasOpen)return;wasOpen=open;
     clearReader();
     if(open&&running()){
-      replay(optical,'active');replay(circuit,'active');
+      if(fx('optical'))replay(optical,'active');if(fx('circuit'))replay(circuit,'active');
       readerTimer=setTimeout(clearReader,1250);
     }
   }).observe(reader,{attributes:true,attributeFilter:['class']});
   // Single delegated listener supports cards added by search, pagination, and live data updates.
   let hoverCard=null,hoverPending=false,hoverX=50,hoverY=50;
   records.addEventListener('pointermove',event=>{
-    if(!running()||mobile.matches||event.pointerType==='touch')return;
+    if(!fx('reactive')||!running()||mobile.matches||event.pointerType==='touch')return;
     const card=event.target.closest('.record');if(!card)return;
     const rect=card.getBoundingClientRect();hoverCard=card;
     hoverX=Math.max(0,Math.min(100,(event.clientX-rect.left)/Math.max(1,rect.width)*100));
@@ -379,7 +384,7 @@
   },{passive:true});
   // The core is already present. No pointer blocking and no alteration of its normal behavior.
   core.addEventListener('click',()=>{
-    if(!running()||mobile.matches||!reader.classList.contains('hidden'))return;
+    if(!fx('expansion')||!running()||mobile.matches||!reader.classList.contains('hidden'))return;
     replay(expansion,'active');clearTimeout(expansionTimer);
     expansionTimer=setTimeout(()=>expansion.classList.remove('active'),1100);
   });
@@ -387,7 +392,7 @@
   const reconnect=()=>{
     const now=performance.now();
     if(!idle&&now-lastInteraction>60000)idle=true;
-    if(idle&&running()&&!mobile.matches&&reader.classList.contains('hidden')){
+    if(fx('reconnect')&&idle&&running()&&!mobile.matches&&reader.classList.contains('hidden')){
       replay(core,'nrs-p6-reconnect');clearTimeout(reconnectTimer);
       reconnectTimer=setTimeout(()=>core.classList.remove('nrs-p6-reconnect'),950);
     }
