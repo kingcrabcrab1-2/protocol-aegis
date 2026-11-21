@@ -69,10 +69,43 @@ const cascade = el("div", "ai-cascade", root); cascade.setAttribute("aria-hidden
 const gate = el("div", "ai-gate", root);
 el("div", "ai-gate-kicker", gate, "NRS / 타임라인 간 시스템 연결 시도 중 ···");
 el("h2", "", gate, "존재 접근 확인");
-el("p", "", gate, "존재성을 헌납하였기 때문에 감각 이상 현상이 일어날 수 있습니다. 앞으로 나아가시겠습니까?");
+el("p", "ai-gate-message", gate, "존재성을 헌납하였기 때문에\n감각 이상 현상이 일어날 수 있습니다.\n앞으로 나아가시겠습니까?");
 const startSound = el("button", "ai-gate-button", gate, "앞으로 나아간다.");
 const startSilent = el("button", "ai-gate-muted", gate, "감각 활성화를 끕니다.");
 startSound.type = startSilent.type = "button";
+
+/* NRS unstable timeline / isolated decorative interference on the access gate. */
+const gateFrame = el("div", "ai-gate-frame", gate);
+const gateBar = el("div", "ai-gate-titlebar", gateFrame);
+el("span", "", gateBar, "NRS // ACCESS CONTROL");
+el("span", "", gateBar, "SYS.WARNING / 001");
+const gateBody = el("div", "ai-gate-body", gateFrame);
+// Move existing interactive elements into the window, preserving their listeners.
+[...gate.children].filter(n => n !== gateFrame).forEach(n => gateBody.appendChild(n));
+const gateFooter = el("div", "ai-gate-footer", gateFrame, "INTER-TIMELINE RELAY   //   SIGNAL UNSTABLE");
+const gateArtifacts = el("div", "ai-gate-artifacts", gate);
+gateArtifacts.setAttribute("aria-hidden", "true");
+const glyphs = ["// 0x00", "▒▒ ERROR", "NRS_██", "[ !! ]", "010101", "SIGNAL LOST", "△ / ∅", "ERR_07", "⟟ ⟐ ⌁", "SYNC ?", "▒░▒░", "[ RECONNECT ]"];
+for (let i=0; i<20; i++) {
+  const g = el("span", "", gateArtifacts, glyphs[i % glyphs.length]);
+  g.style.left = (3 + ((i*37)%92)) + "%";
+  g.style.top = (4 + ((i*29)%89)) + "%";
+  g.style.animationDelay = (-i*.37) + "s";
+  g.style.animationDuration = (2.4 + (i%6)*.65) + "s";
+}
+const gateFlash = el("div", "ai-gate-flash", gate);
+gateFlash.setAttribute("aria-hidden", "true");
+let interferenceTimer = null;
+function interference() {
+  if (dead || gate.classList.contains("hidden")) { clearTimeout(interferenceTimer); return; }
+  if (!reduce) {
+    gate.classList.add("ai-interference");
+    setTimeout(() => gate.classList.remove("ai-interference"), 85 + rnd()*65);
+  }
+  interferenceTimer = setTimeout(interference, 2600 + rnd()*3400);
+}
+if (!reduce) interferenceTimer = setTimeout(interference, 1700);
+
 let introAudio = null, audioEnabled = false, master = null;
 function setupAudio() {
   const AC = window.AudioContext || window.webkitAudioContext;
@@ -138,6 +171,7 @@ function begin(withSound) {
     try { if(setupAudio()) {introAudio.resume().then(()=>soundEvent("boot")).catch(()=>{});} }
     catch(e) {audioEnabled=false;}
   }
+  clearTimeout(interferenceTimer);
   gate.classList.add("hidden");
   run().catch(() => finish(true));
 }
