@@ -194,8 +194,7 @@
   const triangle=document.createElementNS('http://www.w3.org/2000/svg','svg');
   triangle.setAttribute('class','nrs-triangulation');triangle.setAttribute('aria-hidden','true');stage.append(triangle);
   const jump=document.createElement('div');jump.className='nrs-sector-jump';jump.setAttribute('aria-hidden','true');stage.append(jump);
-  const coord=document.createElement('div');coord.className='nrs-recalibration';coord.setAttribute('aria-hidden','true');stage.append(coord);
-  let triangleTimer,jumpTimer,coordTimer;
+  let triangleTimer,jumpTimer;
   records.addEventListener('click',event=>{
     const card=event.target.closest('.record');
     if(!card||!canAnimate()||mobile.matches)return;
@@ -219,17 +218,118 @@
     jump.classList.remove('active');void jump.offsetWidth;jump.classList.add('active');
     clearTimeout(jumpTimer);jumpTimer=setTimeout(()=>jump.classList.remove('active'),680);
   },true);
-  let lastAngle='';
-  function checkCoordinates(){
-    if(!canAnimate()||mobile.matches||!reader.classList.contains('hidden'))return;
-    const angle=world.style.getPropertyValue('--scene-angle');
-    if(!angle||angle===lastAngle)return;
-    lastAngle=angle;
-    const number=Number.parseFloat(angle)||0;
-    coord.textContent=`COORDINATE RECALIBRATION / ${((number%360)+360)%360 .toFixed?.(1) || (((number%360)+360)%360).toFixed(1)}°`;
-    coord.classList.add('active');clearTimeout(coordTimer);
-    coordTimer=setTimeout(()=>coord.classList.remove('active'),650);
+})();
+
+
+/* PHASE 5 — additive effects. No archive data, pager or admin mutations. */
+(() => {
+  'use strict';
+  const app=document.getElementById('mainApp'),stage=app?.querySelector('.archive-stage');
+  const records=document.getElementById('records'),reader=document.getElementById('reader');
+  const decrypt=document.getElementById('decrypt'),messageView=document.getElementById('messageView');
+  const title=document.getElementById('viewTitle'),search=document.getElementById('searchInput');
+  if(!app||!stage||!records||!reader)return;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const mobile=matchMedia('(max-width:750px)');
+  const enabled=()=>!reduced.matches&&!document.hidden&&!app.classList.contains('hidden');
+  const timers=new Set();
+  const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);fn();},ms);timers.add(id);return id;};
+  const layer=document.createElement('div');layer.className='nrs-p5-layer';layer.setAttribute('aria-hidden','true');stage.append(layer);
+  const grid=document.createElement('div');grid.className='nrs-p5-grid';grid.setAttribute('aria-hidden','true');layer.append(grid);
+  let gridTimer;
+  function reconstruct(){
+    if(!enabled()||mobile.matches)return;
+    grid.classList.remove('nrs-p5-rebuild');void grid.offsetWidth;grid.classList.add('nrs-p5-rebuild');
+    clearTimeout(gridTimer);gridTimer=later(()=>grid.classList.remove('nrs-p5-rebuild'),750);
   }
-  // 120ms sampling avoids extra work in the existing orbit animation.
-  setInterval(checkCoordinates,120);
+  document.addEventListener('click',e=>{
+    if(e.target.closest('#nrsArchivePager button:not(:disabled)'))reconstruct();
+  },true);
+  let searchTimer;
+  search?.addEventListener('input',()=>{
+    clearTimeout(searchTimer);searchTimer=later(reconstruct,280);
+  },{passive:true});
+  // Beacon is attached only to already flagged records; it never modifies their data.
+  const marked=new WeakSet();
+  function decorate(){
+    records.querySelectorAll('.record').forEach(card=>{
+      if(marked.has(card))return;marked.add(card);
+      if(card.classList.contains('pinned')||card.querySelector('.pin-label')){
+        const beacon=document.createElement('i');beacon.className='nrs-p5-beacon';
+        beacon.setAttribute('aria-hidden','true');card.append(beacon);
+      }
+    });
+  }
+  new MutationObserver(decorate).observe(records,{childList:true});decorate();
+  // Echo: short, bounded, only on actual scene rotation. Canvas overlay, no cloned cards.
+  const echo=document.createElement('canvas');echo.className='nrs-p5-echo';echo.setAttribute('aria-hidden','true');layer.append(echo);
+  const context=echo.getContext('2d');let cw=0,ch=0,scale=1,previousAngle=null,lastEcho=0;
+  function resize(){if(!context)return;const r=stage.getBoundingClientRect();cw=r.width;ch=r.height;scale=Math.min(devicePixelRatio||1,1.5);echo.width=Math.max(1,Math.round(cw*scale));echo.height=Math.max(1,Math.round(ch*scale));context.setTransform(scale,0,0,scale,0,0);}
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(stage);resize();
+  function drawEcho(now){
+    requestAnimationFrame(drawEcho);
+    if(!context||!enabled()||mobile.matches||!reader.classList.contains('hidden'))return;
+    if(now-lastEcho<90)return;lastEcho=now;
+    const world=document.getElementById('archiveWorld');
+    const angle=parseFloat(world?.style.getPropertyValue('--scene-angle'))||0;
+    context.clearRect(0,0,cw,ch);
+    if(previousAngle===null){previousAngle=angle;return;}
+    const moving=Math.abs(angle-previousAngle)>.13;previousAngle=angle;
+    if(!moving)return;
+    const stageRect=stage.getBoundingClientRect();
+    const cards=records.querySelectorAll('.record');
+    let shown=0;
+    for(const card of cards){
+      if(shown>=9)break;
+      const r=card.getBoundingClientRect();
+      if(r.right<stageRect.left||r.left>stageRect.right||r.bottom<stageRect.top||r.top>stageRect.bottom)continue;
+      const x=r.left-stageRect.left,y=r.top-stageRect.top;
+      context.strokeStyle='rgba(255,157,88,.16)';context.lineWidth=.8;
+      context.strokeRect(x-3,y+2,r.width,r.height);shown++;
+    }
+    later(()=>{if(context)context.clearRect(0,0,cw,ch);},220);
+  }
+  if(context)requestAnimationFrame(drawEcho);
+  // Clearance text is decorative; no real authorization or access check is implied.
+  const box=reader.querySelector('.reader-box');
+  if(!box||!decrypt||!messageView||!title)return;
+  const clearance=document.createElement('div');clearance.className='nrs-p5-clearance';
+  clearance.setAttribute('aria-hidden','true');clearance.textContent='NRS // CLEARANCE SCAN  ·  ARCHIVE ACCESS VERIFIED';box.append(clearance);
+  let clearanceTimer=0,decodeTimer=0,token=0;
+  function restoreTitle(){
+    const original=title.dataset.nrsP5Original;
+    if(original!==undefined){title.textContent=original;delete title.dataset.nrsP5Original;}
+  }
+  function onReaderState(){
+    if(reader.classList.contains('hidden')){
+      token++;clearTimeout(clearanceTimer);clearTimeout(decodeTimer);clearance.classList.remove('active');restoreTitle();return;
+    }
+    if(!enabled())return;
+    if(!messageView.classList.contains('hidden'))return;
+    clearance.classList.remove('active');void clearance.offsetWidth;clearance.classList.add('active');
+    clearTimeout(clearanceTimer);clearanceTimer=later(()=>clearance.classList.remove('active'),1050);
+  }
+  new MutationObserver(onReaderState).observe(reader,{attributes:true,attributeFilter:['class']});
+  function onMessageState(){
+    if(messageView.classList.contains('hidden')||reader.classList.contains('hidden')){
+      token++;clearTimeout(decodeTimer);restoreTitle();return;
+    }
+    if(!enabled())return;
+    restoreTitle();
+    const original=title.textContent||'';
+    if(!original)return;
+    title.dataset.nrsP5Original=original;
+    const run=++token,chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%';
+    const steps=mobile.matches?3:7;
+    let step=0;
+    const render=()=>{
+      if(run!==token||reader.classList.contains('hidden'))return;
+      if(step>=steps){restoreTitle();return;}
+      const visible=Math.floor(original.length*(step+1)/steps);
+      title.textContent=[...original].map((ch,i)=>i<visible||/\s/.test(ch)?ch:chars[(i*13+step*7)%chars.length]).join('');
+      step++;decodeTimer=later(render,mobile.matches?42:48);
+    };
+    render();
+  }
+  new MutationObserver(onMessageState).observe(messageView,{attributes:true,attributeFilter:['class']});
 })();

@@ -62,7 +62,19 @@
 #mainApp .nrs-sector-jump{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:0;background:repeating-linear-gradient(90deg,transparent 0 9%,rgba(255,149,76,.10) 9.15%,transparent 9.4%),radial-gradient(ellipse at center,rgba(255,167,90,.12),transparent 70%)}
 #mainApp .nrs-sector-jump.active{animation:nrsJump .65s ease-out both}
 @keyframes nrsJump{0%{opacity:0;transform:scaleX(1.15)}30%{opacity:.8;transform:scaleX(.92)}100%{opacity:0;transform:scaleX(1)}}
-#mainApp .nrs-recalibration{position:absolute;right:20px;top:65px;z-index:6;pointer-events:none;font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;color:#ffbb8b;text-shadow:0 0 9px #ff8a43;opacity:0;transition:opacity .25s}
-#mainApp .nrs-recalibration.active{opacity:.8}
-@media(max-width:750px){#mainApp .nrs-depth-field,#mainApp .nrs-triangulation,#mainApp .nrs-recalibration{display:none!important}#mainApp .nrs-decrypt-ring{right:17px;top:16px;width:20px;height:20px}}
 @media(prefers-reduced-motion:reduce){#mainApp .nrs-packet,#mainApp .nrs-glass-sheen,#mainApp .nrs-decrypt-ring,#mainApp .nrs-triangulation line,#mainApp .nrs-sector-jump,#mainApp .reader-box.nrs-materializing{animation:none!important}#mainApp .nrs-depth-field{transform:none!important}}
+
+
+/* PHASE 5 — non-interactive, composited decorative effects. */
+#mainApp .nrs-p5-layer{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;contain:paint}
+#mainApp .nrs-p5-grid{position:absolute;inset:0;opacity:0;background-image:linear-gradient(rgba(255,158,93,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(255,158,93,.13) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse at center,#000 8%,transparent 75%)}
+#mainApp .nrs-p5-grid.nrs-p5-rebuild{animation:nrsP5Grid .7s ease-out both}
+@keyframes nrsP5Grid{0%{opacity:0;transform:scale(1.07)}35%{opacity:.55}100%{opacity:0;transform:scale(1)}}
+#mainApp .nrs-p5-echo{position:absolute;inset:0;width:100%;height:100%;opacity:.65;pointer-events:none}
+#mainApp .archive-records .record .nrs-p5-beacon{position:absolute;right:8px;top:7px;width:5px;height:5px;border-radius:50%;background:#ffb875;box-shadow:0 0 7px #ff9c4d,0 0 14px rgba(255,140,67,.55);pointer-events:none;animation:nrsP5Beacon 3.8s ease-in-out infinite}
+@keyframes nrsP5Beacon{0%,100%{opacity:.42;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+#mainApp .reader-box .nrs-p5-clearance{position:absolute;top:53px;left:24px;right:24px;z-index:7;pointer-events:none;color:#ffc18b;text-align:center;font:700 9px ui-monospace,Consolas,monospace;letter-spacing:.12em;text-shadow:0 0 12px rgba(255,148,76,.85);opacity:0;transform:translateY(-5px)}
+#mainApp .reader-box .nrs-p5-clearance.active{animation:nrsP5Clearance 1s ease-out both}
+@keyframes nrsP5Clearance{0%{opacity:0;transform:translateY(-5px)}20%,65%{opacity:.9;transform:translateY(0)}100%{opacity:0}}
+@media(max-width:750px){#mainApp .nrs-p5-layer{display:none!important}#mainApp .reader-box .nrs-p5-clearance{top:46px;left:12px;right:12px;font-size:7px;letter-spacing:.04em}#mainApp .archive-records .record .nrs-p5-beacon{width:4px;height:4px}}
+@media(prefers-reduced-motion:reduce){#mainApp .nrs-p5-layer{display:none!important}#mainApp .archive-records .record .nrs-p5-beacon{animation:none!important}#mainApp .reader-box .nrs-p5-clearance{display:none!important}}
