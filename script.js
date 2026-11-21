@@ -324,32 +324,28 @@ function renderRecords() {
 
     `).join("");
 
-  // Spread regular signals across the available viewport, leaving the central relay readable.
+  // Phase 2I layout: wider, slightly higher signal field. Keep all records
+  // attached to the rotating world, and preserve the separate priority orbit.
   const stage = document.querySelector(".archive-stage");
-  const world = $("archiveWorld");
   const stageWidth = stage.clientWidth;
   const stageHeight = stage.clientHeight;
   const regular = [...$("records").querySelectorAll(".record")];
   const ordinary = regular.filter(node => !node.classList.contains("featured-record"));
+  const safeRadius = Math.max(145, Math.min(stageWidth * .39, stageHeight * .5 - 92));
+  const verticalLift = Math.min(48, stageHeight * .055);
   ordinary.forEach((node, i) => {
     const a = i * 2.399963229728653 + .45;
     const layer = i % 4;
-    // A circular safe radius ensures cards stay visible even while the scene rotates.
-    const safeRadius = Math.max(140, Math.min(stageWidth * .35, stageHeight * .5 - 112));
-    const radius = safeRadius * [.70, .82, .93, 1][layer];
-    const rx = radius;
-    const ry = radius;
-    node.style.setProperty("--pos-x", `${Math.cos(a) * rx}px`);
-    node.style.setProperty("--pos-y", `${Math.sin(a) * ry}px`);
+    const radius = safeRadius * [.78, .89, .98, 1.07][layer];
+    node.style.setProperty("--pos-x", `${Math.cos(a) * radius}px`);
+    node.style.setProperty("--pos-y", `${Math.sin(a) * radius - verticalLift}px`);
     node.style.setProperty("--card-scale", `${[.88, 1, .93, 1.06][layer]}`);
   });
-  // Place priority on the opposite, outer orbit; it still rotates with archiveWorld.
   regular.filter(node => node.classList.contains("featured-record")).forEach((node, i) => {
-    const safeRadius = Math.max(140, Math.min(stageWidth * .35, stageHeight * .5 - 112));
     const a = Math.PI + .20 + i * .18;
-    const radius = safeRadius * 1.12;
+    const radius = safeRadius * 1.18;
     node.style.setProperty("--pos-x", `${Math.cos(a) * radius}px`);
-    node.style.setProperty("--pos-y", `${Math.sin(a) * radius}px`);
+    node.style.setProperty("--pos-y", `${Math.sin(a) * radius - verticalLift}px`);
     node.style.setProperty("--card-scale", ".99");
   });
 

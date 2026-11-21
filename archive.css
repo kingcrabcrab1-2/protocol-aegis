@@ -290,3 +290,66 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
  #mainApp .archive-records .record{padding-left:19px !important;padding-right:19px !important}
  #mainApp .archive-instructions{font-size:9px !important}
 }
+
+
+/* Phase 2J: soft amber frosted glass cards, no hard L-shaped brackets. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  clip-path:polygon(0 11px,11px 0,calc(100% - 11px) 0,100% 11px,100% calc(100% - 11px),calc(100% - 11px) 100%,11px 100%,0 calc(100% - 11px)) !important;
+  background:linear-gradient(135deg,rgba(50,40,40,.47),rgba(18,24,35,.57) 58%,rgba(35,31,37,.49)) !important;
+  backdrop-filter:blur(19px) saturate(1.14) !important;
+  -webkit-backdrop-filter:blur(19px) saturate(1.14) !important;
+  border:1px solid rgba(255,170,119,.22) !important;
+  padding-left:19px !important;
+  padding-right:23px !important;
+  box-shadow:inset 0 0 24px rgba(255,155,91,.065),0 4px 20px rgba(0,0,0,.24) !important;
+}
+/* Soft diffuse amber rim rather than visible corner brackets. */
+#mainApp .archive-records .record::before,
+#mainApp .archive-records .record.featured-record::before {
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  width:auto !important;
+  height:auto !important;
+  border:0 !important;
+  background:linear-gradient(145deg,rgba(255,177,127,.12),transparent 37%,transparent 70%,rgba(255,142,87,.08)) !important;
+  clip-path:none !important;
+  opacity:1 !important;
+  pointer-events:none !important;
+  z-index:0 !important;
+}
+/* Three tiny signal indicators on the right, like the reference image. */
+#mainApp .archive-records .record::after,
+#mainApp .archive-records .record.featured-record::after {
+  content:"" !important;
+  position:absolute !important;
+  inset:auto 10px auto auto !important;
+  top:50% !important;
+  width:4px !important;
+  height:4px !important;
+  transform:translateY(-50%);
+  border:0 !important;
+  border-radius:1px !important;
+  background:#ff9c58 !important;
+  box-shadow:0 -12px 0 rgba(255,151,79,.82),0 12px 0 rgba(255,151,79,.82),0 0 8px rgba(255,131,55,.5) !important;
+  clip-path:none !important;
+  opacity:.9 !important;
+  pointer-events:none !important;
+  z-index:2 !important;
+}
+#mainApp .archive-records .record:hover,
+#mainApp .archive-records .record:focus-visible,
+#mainApp .archive-records .record.featured-record:hover,
+#mainApp .archive-records .record.featured-record:focus-visible {
+  background:linear-gradient(135deg,rgba(65,46,43,.58),rgba(22,31,44,.68)) !important;
+  border-color:rgba(255,182,132,.43) !important;
+  box-shadow:inset 0 0 26px rgba(255,153,87,.1),0 0 18px rgba(255,141,70,.18) !important;
+  scale:1.03 !important;
+}
+@media(max-width:750px){
+ #mainApp .archive-records .record,
+ #mainApp .archive-records .record.featured-record{padding-left:13px !important;padding-right:17px !important}
+ #mainApp .archive-records .record::after,
+ #mainApp .archive-records .record.featured-record::after{right:6px !important}
+}
