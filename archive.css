@@ -108,3 +108,34 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
 #mainApp .reader-box::before{content:'NRS // SECURE INTER-TIMELINE ARCHIVE  •  DECRYPTED SIGNAL';display:block;letter-spacing:.18em;color:#e2a274;font-size:9px;border-bottom:1px solid rgba(248,150,81,.32);padding-bottom:12px;margin:-18px 0 18px}
 #mainApp .reader-box::after{content:'NRS   /   RELAY CONNECTION ESTABLISHED  ━━━━━━━━━  ARCHIVE SYSTEM';display:block;margin-top:25px;padding-top:14px;border-top:1px solid rgba(248,150,81,.35);font-size:9px;letter-spacing:.14em;color:#c99673}
 @media(max-width:750px){#mainApp{padding:0 8px 48px!important}#mainApp .archive-stage{height:calc(100dvh - 72px);min-height:590px}.archive-instructions{bottom:43px!important;font-size:7px!important}#mainApp footer{bottom:15px!important}#mainApp .reader-box::before,#mainApp .reader-box::after{font-size:7px}}
+
+/* Phase 2G v1: first supplied video, full-screen kinetic NRS data-space. */
+#mainApp .nrs-video-background{position:fixed;inset:0;z-index:-3;overflow:hidden;pointer-events:none;background:#030812}
+#mainApp .nrs-video-background video{display:block;width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(1.15) brightness(.77) contrast(1.07)}
+#mainApp .nrs-video-background::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,7,14,.30),rgba(3,7,14,.12) 50%,rgba(3,7,14,.26)),radial-gradient(ellipse at center,rgba(0,0,0,.14),rgba(0,0,0,.32) 100%);pointer-events:none}
+#mainApp .archive-stage{background:transparent!important}
+#mainApp .archive-grid{opacity:.18}
+#mainApp .archive-records .record{background:linear-gradient(130deg,rgba(12,22,35,.54),rgba(18,24,34,.69))!important;backdrop-filter:blur(22px) saturate(1.2)!important;-webkit-backdrop-filter:blur(22px) saturate(1.2)!important;border:1px solid rgba(245,167,108,.66)!important;border-radius:5px 14px 5px 14px!important;clip-path:polygon(0 12px,12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px));box-shadow:inset 0 1px rgba(255,225,180,.14),0 4px 28px rgba(0,0,0,.4)!important}
+#mainApp .archive-records .record:hover,#mainApp .archive-records .record:focus-visible{scale:1.13;background:rgba(22,32,45,.82)!important;border-color:#ffd1a0!important;box-shadow:0 0 27px rgba(255,149,67,.5),0 0 50px rgba(28,120,220,.16)!important}
+/* Unlike the former fixed featured card, this special message orbits with the others. */
+#mainApp .archive-records .record.featured-record{position:absolute!important;left:0!important;right:auto!important;top:0!important;width:clamp(188px,16vw,255px)!important;min-height:90px!important;padding:17px!important;transform:translate(var(--pos-x,0px),var(--pos-y,0px)) rotate(var(--scene-counter,0deg)) scale(var(--card-scale,1))!important;animation:nrsFloat 6s ease-in-out infinite alternate!important;animation-delay:var(--float-delay)!important;border:1px solid rgba(255,190,116,.96)!important;background:linear-gradient(125deg,rgba(56,35,27,.70),rgba(15,31,44,.70))!important;box-shadow:0 0 22px rgba(255,160,85,.27),inset 0 1px rgba(255,230,200,.2)!important;z-index:6}
+#mainApp .archive-records .record.featured-record:hover{scale:1.12!important;box-shadow:0 0 30px rgba(255,165,75,.65)!important}
+#mainApp .archive-records .record.featured-record .record-name{font-size:clamp(14px,1.15vw,17px)!important}
+#mainApp .archive-center{background:radial-gradient(ellipse at center,rgba(3,8,16,.64),rgba(3,8,16,.18) 68%,transparent 100%);padding:38px 20px;border-radius:50%}
+#mainApp .archive-center h1{color:#ffd2a4;text-shadow:0 0 18px rgba(252,136,52,.55),0 2px 20px #000!important}
+#mainApp .archive-instructions,#mainApp footer{color:#ffe1c2!important;text-shadow:0 1px 8px #000,0 0 14px #000!important}
+@media(max-width:750px){#mainApp .archive-records .record.featured-record{width:150px!important;min-height:70px!important;padding:10px!important}#mainApp .archive-records .record.featured-record .record-name{font-size:12px!important}}
+@media(prefers-reduced-motion:reduce){#mainApp .nrs-video-background video{display:none}#mainApp .nrs-video-background{background:#081320 url('./nrs-background-v1-poster.jpg') center/cover no-repeat}}
+
+/* Phase 2G hover stability: subtle in-place emphasis without pointer oscillation. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  transform-origin: center center;
+  transition: border-color .22s ease, box-shadow .22s ease, background .22s ease, opacity .22s ease, scale .22s ease;
+}
+#mainApp .archive-records .record:hover,
+#mainApp .archive-records .record:focus-visible,
+#mainApp .archive-records .record.featured-record:hover,
+#mainApp .archive-records .record.featured-record:focus-visible {
+  scale: 1.03 !important;
+}

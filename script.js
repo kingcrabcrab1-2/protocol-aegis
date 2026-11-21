@@ -329,7 +329,7 @@ function renderRecords() {
   const world = $("archiveWorld");
   const stageWidth = stage.clientWidth;
   const stageHeight = stage.clientHeight;
-  const regular = [...$("records").querySelectorAll(".record:not(.featured-record)")];
+  const regular = [...$("records").querySelectorAll(".record")];
   regular.forEach((node, i) => {
     const a = i * 2.399963229728653 + .45;
     const layer = i % 4;
@@ -342,11 +342,7 @@ function renderRecords() {
     node.style.setProperty("--pos-y", `${Math.sin(a) * ry}px`);
     node.style.setProperty("--card-scale", `${[.88, 1, .93, 1.06][layer]}`);
   });
-  // The priority record stays fixed in screen space, independent of world rotation.
-  $("records").querySelectorAll(".featured-record").forEach((node, i) => {
-    stage.appendChild(node);
-    node.style.setProperty("--featured-offset", `${i * 98}px`);
-  });
+  // Priority archive stays in the same rotating world, with a larger glass card.
 
   document
     .querySelectorAll(".record")
