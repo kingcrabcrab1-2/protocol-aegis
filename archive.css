@@ -834,3 +834,58 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
 @media (prefers-reduced-motion: reduce) {
   #mainApp .reader-box::after { animation: none !important; opacity: 1 !important; }
 }
+
+
+/* Phase 2N: stationary relay indicator OUTSIDE the scrollable reader-box.
+   The status belongs to the fixed reader overlay, not the message scroll area. */
+#mainApp .reader-box {
+  height:min(86dvh,920px) !important;
+  max-height:min(86dvh,920px) !important;
+  padding-bottom:46px !important;
+}
+#mainApp .reader-box::after {
+  content:none !important;
+  display:none !important;
+  animation:none !important;
+}
+#mainApp .reader::after {
+  content:'●  LINK ACTIVE     /     NRS INTER-TIMELINE RELAY     /     END OF TRANSMISSION';
+  position:absolute;
+  box-sizing:border-box;
+  z-index:2;
+  pointer-events:none;
+  width:min(980px,calc(100vw - 52px));
+  left:50%;
+  bottom:calc((100dvh - min(86dvh,920px))/2 + 22px);
+  transform:translateX(-50%);
+  padding:13px clamp(26px,5vw,72px) 0;
+  height:36px;
+  overflow:hidden;
+  border-top:1px solid rgba(255,161,94,.27);
+  color:#bf855f;
+  font-family:monospace;
+  font-size:9px;
+  letter-spacing:.12em;
+  line-height:16px;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  animation:nrsRelayBlinkStable 3s steps(1,end) infinite;
+}
+@media(max-width:750px) {
+  #mainApp .reader-box {
+    height:91dvh !important;
+    max-height:91dvh !important;
+    padding-bottom:30px !important;
+  }
+  #mainApp .reader::after {
+    width:calc(100vw - 20px);
+    bottom:calc(4.5dvh + 20px);
+    padding:10px 20px 0;
+    height:29px;
+    font-size:7px;
+    letter-spacing:.04em;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  #mainApp .reader::after {animation:none !important;opacity:1 !important}
+}
