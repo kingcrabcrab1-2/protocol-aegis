@@ -203,3 +203,42 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
  #mainApp .archive-records .record .record-name{font-size:11px !important}
 }
 @media(prefers-reduced-motion:reduce){#mainApp .archive-records .record,#mainApp .archive-records .record.featured-record{animation:none !important}}
+
+
+/* Phase 2H glass restoration: retain the angular silhouette, restore frosted transparency. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  background:rgba(11,20,30,.34) !important;
+  backdrop-filter:blur(19px) saturate(1.18) !important;
+  -webkit-backdrop-filter:blur(19px) saturate(1.18) !important;
+  box-shadow:0 5px 22px rgba(0,0,0,.25),0 0 14px rgba(245,115,47,.10) !important;
+}
+/* Translucent inner tint: unlike the old opaque inset, the moving video remains visible. */
+#mainApp .archive-records .record::before,
+#mainApp .archive-records .record.featured-record::before {
+  background:linear-gradient(135deg,rgba(12,18,28,.30),rgba(16,23,35,.46)) !important;
+  inset:0 !important;
+  z-index:0 !important;
+}
+/* Thin luminous line following the exact irregular perimeter. */
+#mainApp .archive-records .record::after,
+#mainApp .archive-records .record.featured-record::after {
+  content:"" !important;
+  display:block !important;
+  position:absolute !important;
+  inset:0 !important;
+  z-index:1 !important;
+  pointer-events:none !important;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 22 H8 L16 0 H65 L72 17 H90 L100 35 V79 L92 100 H55 L49 86 H20 L14 100 H0 Z' fill='none' stroke='%23ff874a' stroke-width='1.6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat !important;
+  opacity:.93;
+}
+#mainApp .archive-records .record .record-no,
+#mainApp .archive-records .record .record-name {z-index:2 !important}
+#mainApp .archive-records .record:hover,
+#mainApp .archive-records .record:focus-visible,
+#mainApp .archive-records .record.featured-record:hover,
+#mainApp .archive-records .record.featured-record:focus-visible {
+  background:rgba(18,28,40,.47) !important;
+  box-shadow:0 0 20px rgba(255,141,70,.25),0 5px 25px rgba(0,0,0,.3) !important;
+  scale:1.03 !important;
+}
