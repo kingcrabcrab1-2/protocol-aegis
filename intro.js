@@ -1,4 +1,4 @@
-/* PROTOCOL : AEGIS — Phase 2A: HUMAN RECONSTRUCTION intro (WebGL particles, Canvas2D fallback) */
+/* PROTOCOL : AEGIS — Phase 2A: MULTIVERSE RECONSTRUCTION intro (WebGL particles, Canvas2D fallback) */
 (() => {
 "use strict";
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -9,7 +9,7 @@ const rnd = Math.random, PI2 = Math.PI * 2;
 const frame = () => new Promise(requestAnimationFrame);
 let N = small ? 2600 : 7500, dead = false, onDone = null, cancelSleep = [];
 const sleep = (ms) => new Promise((r) => { const id = setTimeout(r, ms); cancelSleep.push(() => { clearTimeout(id); r(); }); });
-const tick = () => { try { play("clickSound"); } catch (e) {} };
+const tick = () => {};
 
 /* ---------- 입자 형상 생성: [x,y,z,tone] * N ---------- */
 const dir = () => { const z = rnd() * 2 - 1, t = rnd() * PI2, r = Math.sqrt(1 - z * z); return [r * Math.cos(t), z, r * Math.sin(t)]; };
@@ -18,40 +18,19 @@ const fill = (fn) => { const o = new Float32Array(N * 4); for (let i = 0; i < N;
 const shapes = {};
 function build() {
   shapes.noise = fill(() => { const d = dir(), r = 1.6 + rnd() * 1.6; return [d[0] * r, d[1] * r, d[2] * r, .3]; });
-  const nz = (x, y, z) => Math.sin(x * 2.1 + Math.sin(y * 1.7 + z)) * Math.sin(y * 2.6 + Math.sin(z * 1.9 + x * .8)) + Math.sin(z * 3.3 + x * 1.3) * .5;
-  shapes.earth = fill(() => { for (;;) { const d = dir(), land = nz(d[0] * 1.8, d[1] * 1.8, d[2] * 1.8) > .12; if (land || rnd() < .16) return [d[0], d[1], d[2], land ? .95 : .4]; } });
-  /* 손: 캡슐(손가락 3마디, 엄지 3마디) + 손바닥 + 손목 */
-  const caps = [];
-  [[-.36, .02, .1, [.34, .22, .18], .074], [-.12, .06, .03, [.4, .26, .2], .08], [.12, .06, -.03, [.37, .24, .19], .078], [.34, .0, -.1, [.29, .19, .15], .068], [-.5, -.38, -1.05, [.3, .24, .2], .092]]
-    .forEach(([x, y, a, L, r], i) => { let px = x, py = y, pz = 0, cu = 0; L.forEach((l, j) => { cu += .2 + (i === 4 ? 0 : i * .02); const nx = px + Math.sin(a) * l * Math.cos(cu), ny = py + Math.cos(a) * l * Math.cos(cu), nzz = pz + l * Math.sin(cu); caps.push([px, py, pz, nx, ny, nzz, r * (1 - j * .12), r * (1 - (j + 1) * .12), l]); px = nx; py = ny; pz = nzz; }); });
-  caps.push([0, -.72, -.02, 0, -1.15, -.02, .27, .25, .43]);
-  const wt = caps.map((c) => c[8] * (c[6] + c[7])), tw = wt.reduce((s, v) => s + v, 0) + .35;
-  shapes.hand = fill(() => {
-    let k = rnd() * tw;
-    if (k > tw - .35) { const d = dir(); return [d[0] * .5, d[1] * .46 - .3, d[2] * .14, .8]; }
-    let i = 0; while (i < caps.length - 1 && k > wt[i]) { k -= wt[i]; i++; }
-    const c = caps[i], t = rnd(), e = Math.min(t, 1 - t);
-    if (rnd() < .75 * Math.exp(-Math.pow(e / .05, 2))) return shapes_hand_retry(caps, wt, tw);
-    let ax = [c[3] - c[0], c[4] - c[1], c[5] - c[2]]; const L = Math.hypot(...ax); ax = ax.map((v) => v / L);
-    let u = [ax[1], -ax[0], 0]; if (Math.hypot(...u) < .1) u = [1, 0, 0]; const ul = Math.hypot(...u); u = u.map((v) => v / ul);
-    const v = [ax[1] * u[2] - ax[2] * u[1], ax[2] * u[0] - ax[0] * u[2], ax[0] * u[1] - ax[1] * u[0]];
-    const ph = rnd() * PI2, r = (c[6] + (c[7] - c[6]) * t) * (1 + .14 * Math.pow(Math.abs(2 * t - 1), 8)), co = Math.cos(ph) * r, si = Math.sin(ph) * r;
-    return [c[0] + (c[3] - c[0]) * t + u[0] * co + v[0] * si, c[1] + (c[4] - c[1]) * t + u[1] * co + v[1] * si + .08, c[2] + (c[5] - c[2]) * t + u[2] * co + v[2] * si, .88];
-  });
-  function shapes_hand_retry(cs, w, T) { const d = dir(); return [d[0] * .5, d[1] * .46 - .3, d[2] * .14, .8]; }
-  /* 얼굴: 타원체 두개골 + 눈·코·입·턱·광대 변위 */
-  const B = [[0, .05, .05, .28, .1], [0, -.26, .11, .08, .14], [.1, -.3, .05, .04, .05], [-.1, -.3, .05, .04, .05], [0, -.4, .12, .03, -.04],
-    [.3, .2, .16, .08, -.08], [-.3, .2, .16, .08, -.08], [.3, .2, .06, .06, .1], [-.3, .2, .06, .06, .1], [.3, .34, .2, .04, .07], [-.3, .34, .2, .04, .07],
-    [.48, -.12, .16, .14, .05], [-.48, -.12, .16, .14, .05], [0, -.5, .17, .035, .05], [0, -.62, .15, .04, .06], [0, -.58, .2, .014, -.06], [0, -.85, .2, .1, .06]];
-  const disp = (x, y) => { let s = 0; for (const b of B) s += b[4] * Math.exp(-(((x - b[0]) / b[2]) ** 2 + ((y - b[1]) / b[3]) ** 2)); return s; };
-  shapes.face = fill(() => {
-    for (;;) {
-      const d = dir(), tp = 1 - .3 * sstep(-.1, -1, d[1]); let x = d[0] * .78 * tp, y = d[1], z = d[2] * .9, dz = 0;
-      if (d[2] > 0) { dz = disp(x, y) * 1.7 * sstep(0, .3, d[2]); z += dz; }
-      const acc = d[2] < .15 ? .3 : Math.min(1, .45 + 5 * Math.abs(dz));
-      if (rnd() < acc) return [x, y, z, Math.min(1, Math.max(.08, .5 + dz * 2.6))];
-    }
-  });
+  /* Nine distinct cosmic topologies: halo, lattice, accretion, vortex, singularity,
+     entangled orbits, wormhole, standing waves, and brane intersection. */
+  const ring = (r, a, tilt=0) => [r*Math.cos(a), r*Math.sin(a)*Math.cos(tilt), r*Math.sin(a)*Math.sin(tilt)];
+  shapes.genesis = fill((i) => { const a=rnd()*PI2, r=.12+Math.pow(rnd(),.65)*1.25; const p=ring(r,a,.22); return [p[0],p[1],p[2]+(rnd()-.5)*.18,.42+rnd()*.5]; });
+  shapes.halo = fill(() => { const a=rnd()*PI2, r=.65+rnd()*.45; const p=ring(r,a,.45); return [p[0],p[1],p[2]+(rnd()-.5)*.12,.55+rnd()*.45]; });
+  shapes.lattice = fill(() => { const a=rnd()*PI2, b=rnd()*PI2, r=.9+.12*Math.sin(7*a+4*b); return [r*Math.cos(a)*Math.sin(b),r*Math.sin(a)*Math.sin(b),r*Math.cos(b),.5+rnd()*.5]; });
+  shapes.accretion = fill(() => { const a=rnd()*PI2, r=.12+Math.sqrt(rnd())*1.18, swirl=a+r*3.8; return [r*Math.cos(swirl),r*Math.sin(swirl)*.56,(rnd()-.5)*.3+r*.18*Math.sin(a*3),.4+rnd()*.6]; });
+  shapes.vortex = fill(() => { const t=rnd(), a=t*PI2*5+(rnd()-.5)*1.5, r=.1+1.12*t; return [r*Math.cos(a), (t-.5)*1.6, r*Math.sin(a),.45+rnd()*.55]; });
+  shapes.singularity = fill(() => { const a=rnd()*PI2, r=.16+Math.pow(rnd(),1.9)*1.2; return [r*Math.cos(a),r*Math.sin(a),.38*Math.sin(a*4+r*8),.5+rnd()*.5]; });
+  shapes.entanglement = fill(() => { const a=rnd()*PI2, which=rnd()<.5?-1:1; const r=.47+.12*Math.sin(a*3); return [which*.48+r*Math.cos(a),r*Math.sin(a),.46*Math.sin(a*2+which),.55+rnd()*.45]; });
+  shapes.wormhole = fill(() => { const a=rnd()*PI2, t=rnd()*2-1, r=.26+.9*Math.abs(t)**1.4; return [r*Math.cos(a),t*1.2,r*Math.sin(a),.45+rnd()*.55]; });
+  shapes.resonance = fill(() => { const a=rnd()*PI2, r=Math.sqrt(rnd())*1.18; return [r*Math.cos(a),r*Math.sin(a),.3*Math.sin(r*17+a*3),.45+rnd()*.55]; });
+  shapes.brane = fill(() => { const a=rnd()*PI2, b=rnd()*PI2, R=.72, r=.32; return [(R+r*Math.cos(b))*Math.cos(a), (R+r*Math.cos(b))*Math.sin(a),r*Math.sin(b)+.22*Math.sin(3*a),.45+rnd()*.55]; });
 }
 
 /* ---------- 상태 ---------- */
@@ -67,6 +46,44 @@ const auth = el("div", "ai-auth", root), rad = el("canvas", "", auth); rad.style
 const t1 = el("h2", "", auth, "PROTOCOL : AEGIS"), t2 = el("p", "", auth, "ARCHIVED INTER-TIMELINE RELAY TERMINAL"), t3 = el("p", "", auth), enter = el("button", "ai-enter", auth, "ENTER ARCHIVE");
 const skip = el("button", "ai-skip", root, "SKIP ▸▸"); skip.type = "button"; enter.type = "button";
 el("div", "ai-sign", root, "written by. hamge");
+const gate = el("div", "ai-gate", root);
+el("div", "ai-gate-kicker", gate, "N.E.R.S.A. / INTER-TIMELINE SYSTEM");
+el("h2", "", gate, "INITIAL CONNECTION");
+el("p", "", gate, "AUDIO INITIALIZATION REQUIRED");
+const startSound = el("button", "ai-gate-button", gate, "INITIALIZE SYSTEM  /  SOUND ON");
+const startSilent = el("button", "ai-gate-muted", gate, "CONTINUE WITHOUT SOUND");
+startSound.type = startSilent.type = "button";
+let introAudio = null, audioEnabled = false;
+function soundEvent(kind, step=0) {
+  if (!audioEnabled || !introAudio) return;
+  try {
+    const t=introAudio.currentTime+.015;
+    const note=(freq, at, duration, volume, wave="sine", endFreq=freq) => {
+      const o=introAudio.createOscillator(), g=introAudio.createGain(); o.type=wave;
+      o.frequency.setValueAtTime(Math.max(20,freq),at);
+      o.frequency.exponentialRampToValueAtTime(Math.max(20,endFreq),at+duration);
+      g.gain.setValueAtTime(.0001,at);
+      g.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),at+Math.min(.05,duration*.22));
+      g.gain.exponentialRampToValueAtTime(.0001,at+duration);
+      o.connect(g);g.connect(introAudio.destination);o.start(at);o.stop(at+duration+.02);
+    };
+    if(kind==="boot") {note(54,t,1.8,.11,"sawtooth",84);note(220,t+.12,.7,.045,"sine",440);note(660,t+.55,.32,.035,"triangle",990);note(880,t+1.05,.28,.025,"sine",1320);}
+    if(kind==="transition") {note(95+step*17,t,.65,.045,"triangle",190+step*25);note(420+step*31,t+.15,.2,.018,"sine",620+step*34);}
+    if(kind==="converge") {note(90,t,1.5,.08,"sawtooth",42);note(440,t+.15,1.1,.03,"sine",880);note(660,t+.32,.9,.02,"triangle",990);}
+  } catch(e) { /* audio may be blocked */ }
+}
+function begin(withSound) {
+  if (gate.classList.contains("hidden")) return;
+  audioEnabled = withSound;
+  if (withSound) {
+    try { const AC=window.AudioContext||window.webkitAudioContext; if(AC) {introAudio=new AC();introAudio.resume().then(()=>soundEvent("boot")).catch(()=>{});} }
+    catch(e) {audioEnabled=false;}
+  }
+  gate.classList.add("hidden");
+  run().catch(() => finish(true));
+}
+startSound.addEventListener("click",()=>begin(true));
+startSilent.addEventListener("click",()=>begin(false));
 
 /* ---------- WebGL ---------- */
 const VS = `attribute vec4 aA;attribute vec4 aB;attribute vec4 aR;uniform float uMix,uTime,uAspect,uScale,uSize,uDamage,uCollapse,uYaw,uPitch,uDpr;varying float vA,vT,vG,vC;
@@ -78,7 +95,7 @@ float w=3.-p.z;float k=2.6/w;gl_Position=vec4(p.x*k*uScale/uAspect,p.y*k*uScale,
 gl_PointSize=(vG>.5?11.:2.4)*uSize*k*uDpr;vT=tone*(.55+.45*(p.z+1.)*.5);vA=(1.-uCollapse)*(1.-dm*.65);vC=floor(mod(aR.z*8.+floor(uTime*(2.+aR.x*3.)),8.));}`;
 const FS = `precision mediump float;uniform sampler2D uAtlas;varying float vA,vT,vG,vC;
 void main(){float a;if(vG>.5){vec2 c=vec2(mod(vC,4.),floor(vC/4.));a=texture2D(uAtlas,(c+gl_PointCoord)/vec2(4.,2.)).r;}else{a=smoothstep(.5,.15,length(gl_PointCoord-.5));}
-vec3 col=mix(vec3(.9,.32,.08),vec3(1.,.86,.66),vT);gl_FragColor=vec4(col*a*vA*(.35+vT*.9),1.);}`;
+vec3 col=mix(vec3(.31,.86,.91),vec3(.68,.49,1.),vT);gl_FragColor=vec4(col*a*vA*(.35+vT*.9),1.);}`;
 function initGL() {
   try { gl = cv.getContext("webgl", { antialias: false, alpha: true }); } catch (e) { gl = null; }
   if (!gl) return false;
@@ -135,7 +152,7 @@ function drawCPU(time) {
     let x2 = cyw * x + syw * z, z2 = -syw * x + cyw * z, y2 = cp * y - sp * z2, z3 = sp * y + cp * z2;
     const k = 2.6 / (3 - z3), a = (1 - S.collapse) * (.3 + tone * .6);
     if (a <= .02) continue;
-    c.fillStyle = tone > .7 ? `rgba(255,214,160,${a})` : `rgba(255,100,31,${a})`;
+    c.fillStyle = tone > .7 ? `rgba(177,125,255,${a})` : `rgba(76,219,232,${a})`;
     const px = cx + x2 * k * sc, py = cy - y2 * k * sc;
     if (r3 > .8) c.fillText("01AF7<#/"[(i + Math.floor(time * 2)) % 8], px, py); else c.fillRect(px, py, 1.8, 1.8);
   }
@@ -192,19 +209,28 @@ async function morph(a, b, ms) {
   for (;;) { if (dead) return; const p = Math.min(1, (performance.now() - s) / ms); S.mix = reduce ? 1 : p; if (p >= 1 || reduce) break; await frame(); }
 }
 async function phase2() {
-  mode = "show"; phase.textContent = "PHASE 02 — SYSTEM RECONSTRUCTION"; log.textContent = ""; hudStart(() => "INTEGRITY : " + (S.damage > .2 ? "DEGRADED" : "RESTORING"));
-  const f = seen ? [] : ["earth", "hand"];
-  if (!seen) {
-    S.amp = .3; S.spin = 1; hud("OBJECT 01 / PLANETARY BODY", "RECONSTRUCTING FRAGMENTED MEMORY..."); await morph("noise", "earth", 1500); await sleep(1700); if (dead) return;
-    S.spin = 0; S.amp = .25; hud("OBJECT 02 / MANUAL APPENDAGE", "PERSONNEL STATUS : UNCONFIRMED"); await morph("earth", "hand", 1500); await sleep(1500); if (dead) return;
-    hud("OBJECT 03 / HUMAN FACIAL STRUCTURE", "BIOMETRIC RECONSTRUCTION"); await morph("hand", "face", 1800);
-  } else { hud("OBJECT 03 / HUMAN FACIAL STRUCTURE", "BIOMETRIC RECONSTRUCTION"); await morph("noise", "face", 1400); }
-  if (dead) return; S.amp = .55;
-  const hold = seen ? 1400 : 3600, s = performance.now();
-  while (!dead && performance.now() - s < hold) { const p = (performance.now() - s) / hold; S.damage = reduce ? 0 : (p > .35 && p < .8 ? Math.sin((p - .35) / .45 * Math.PI) : 0); await frame(); }
-  if (dead) return; hud("DATA INTEGRITY LOST", "ARCHIVE INTEGRITY : COMPROMISED");
-  const c0 = performance.now(), cd = reduce ? 1 : (seen ? 900 : 1500);
-  while (!dead) { const p = Math.min(1, (performance.now() - c0) / cd); S.collapse = reduce ? 1 : p; S.damage = .6; if (p >= 1) break; await frame(); }
+  mode = "show"; phase.textContent = "PHASE 02 — MULTIVERSE RECONSTRUCTION"; log.textContent = "";
+  hudStart(() => "TIMELINE COHERENCE : " + (S.damage > .2 ? "UNSTABLE" : "SYNCHRONIZING"));
+  const sequence = seen ? ["genesis", "wormhole", "brane"] : ["genesis", "halo", "lattice", "accretion", "vortex", "singularity", "entanglement", "wormhole", "resonance", "brane"];
+  let previous = "noise";
+  for (let i = 0; i < sequence.length; i++) {
+    if (dead) return;
+    const name = sequence[i];
+    S.amp = .18 + .04*(i%3); S.spin = i%2 ? -.3 : .3;
+    hud(`UNIVERSE ${String(i+1).padStart(2,"0")} / ${name.toUpperCase()}`, "INTER-TIMELINE STRUCTURE DETECTED");
+    soundEvent("transition", i);
+    await morph(previous, name, reduce ? 1 : seen ? 550 : 1150);
+    await sleep(reduce ? 40 : seen ? 180 : 330);
+    previous = name;
+  }
+  if (dead) return;
+  S.amp = .5;
+  hud("MULTIVERSE CONVERGENCE", "ALL TIMELINES LINKED TO CENTRAL ARCHIVE");
+  soundEvent("converge");
+  await sleep(reduce ? 50 : seen ? 300 : 750);
+  if (dead) return;
+  const c0=performance.now(), cd=reduce?1:seen?500:1100;
+  while (!dead) { const p=Math.min(1,(performance.now()-c0)/cd); S.collapse=reduce?1:p; S.damage=.25*p; if(p>=1)break; await frame(); }
 }
 async function phase3() {
   clearInterval(hudT); hl.classList.remove("on"); hr.classList.remove("on"); lab.classList.remove("on"); cv.style.opacity = 0; log.textContent = "";
@@ -225,6 +251,7 @@ function finish(fromSkip) {
   try { localStorage.setItem("aegis_intro_seen", "1"); } catch (e) {}
   const cb = onDone; onDone = null; root.classList.add("out"); tick();
   setTimeout(() => { try { if (gl) gl.getExtension("WEBGL_lose_context")?.loseContext(); } catch (e) {} root.remove(); }, 800);
+  if (introAudio) { try { introAudio.close(); } catch(e) {} introAudio=null; }
   if (cb) cb();
 }
 skip.addEventListener("click", () => finish(true));
@@ -236,7 +263,7 @@ window.AegisIntro = {
     onDone = cb; build(); document.body.appendChild(root); resize(); addEventListener("resize", resize);
     initGL();
     setPair("noise", "noise"); resize(); loop(); skip.focus({ preventScroll: true });
-    run().catch(() => finish(true));
+    startSound.focus({ preventScroll: true });
   }
 };
 })();
