@@ -640,3 +640,105 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
     margin: 0 !important;
   }
 }
+
+/* Phase 2K — NRS secure signal reader. Only the opened message panel is restyled. */
+#mainApp .reader {
+  background:rgba(2,6,12,.82) !important;
+  backdrop-filter:blur(12px) saturate(.8) !important;
+  -webkit-backdrop-filter:blur(12px) saturate(.8) !important;
+}
+#mainApp .reader-box {
+  box-sizing:border-box;
+  position:relative;
+  width:min(980px,calc(100vw - 52px)) !important;
+  max-height:min(86dvh,920px) !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  padding:62px clamp(26px,5vw,72px) 46px !important;
+  color:#f1d7c1;
+  border:1px solid rgba(255,162,88,.48) !important;
+  border-radius:0 !important;
+  clip-path:polygon(0 30px,30px 0,calc(100% - 100px) 0,calc(100% - 76px) 13px,calc(100% - 30px) 13px,100% 43px,100% calc(100% - 36px),calc(100% - 36px) 100%,90px 100%,72px calc(100% - 12px),30px calc(100% - 12px),0 calc(100% - 42px)) !important;
+  background:
+    linear-gradient(90deg,rgba(255,145,67,.09) 0 2px,transparent 2px calc(100% - 2px),rgba(255,145,67,.09) calc(100% - 2px)),
+    repeating-linear-gradient(0deg,transparent 0 31px,rgba(255,158,91,.028) 32px),
+    radial-gradient(ellipse at 85% 0%,rgba(224,111,47,.13),transparent 48%),
+    linear-gradient(135deg,rgba(21,32,43,.98),rgba(8,15,26,.99) 65%,rgba(29,21,24,.98)) !important;
+  box-shadow:inset 0 0 0 5px rgba(5,12,21,.8),inset 0 0 0 6px rgba(255,155,87,.20),inset 0 0 60px rgba(238,111,39,.07),0 0 70px rgba(0,0,0,.7) !important;
+  scrollbar-width:thin;
+  scrollbar-color:#a65e38 #101824;
+}
+#mainApp .reader-box::before {
+  content:'NRS  /  ENCRYPTED ARCHIVE     ◈     SIGNAL DECRYPTED' !important;
+  display:block !important;
+  position:relative !important;
+  margin:0 44px 26px 0 !important;
+  padding:0 0 15px !important;
+  width:auto !important;
+  border:0 !important;
+  border-bottom:1px solid rgba(255,161,94,.34) !important;
+  color:#ffa86d !important;
+  font-family:monospace;
+  font-size:10px !important;
+  font-weight:600;
+  letter-spacing:.17em !important;
+  line-height:1.7;
+  text-shadow:0 0 12px rgba(255,135,57,.25);
+}
+#mainApp .reader-box::after {
+  content:'●  LINK ACTIVE     /     NRS INTER-TIMELINE RELAY     /     END OF TRANSMISSION' !important;
+  display:block !important;
+  position:relative !important;
+  margin:30px 0 0 !important;
+  padding:16px 0 0 !important;
+  border:0 !important;
+  border-top:1px solid rgba(255,161,94,.27) !important;
+  color:#bf855f !important;
+  font-family:monospace;
+  font-size:9px !important;
+  letter-spacing:.12em !important;
+  line-height:1.7;
+  white-space:normal;
+}
+#mainApp .reader-box .reader-frame-heading {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:0 0 25px !important;
+  padding:0 0 19px !important;
+  border-bottom:1px solid rgba(255,162,92,.24) !important;
+  color:#ffc08f !important;
+  font-size:clamp(11px,1.1vw,14px) !important;
+  letter-spacing:.13em;
+}
+#mainApp .reader-box .reader-mark {width:45px;height:58px;object-fit:contain;opacity:.9}
+#mainApp .reader-box #viewTitle {
+  color:#ffe1c2 !important;
+  font-size:clamp(24px,3vw,39px) !important;
+  line-height:1.3 !important;
+  letter-spacing:.02em;
+  text-shadow:0 0 24px rgba(255,139,69,.12) !important;
+}
+#mainApp .reader-box #readerClose {
+  position:sticky;
+  top:0;
+  z-index:10 !important;
+  color:#ffb07a !important;
+  text-shadow:0 0 12px rgba(255,132,59,.3);
+}
+@media (max-width:750px) {
+  #mainApp .reader {padding:10px !important;align-items:center !important}
+  #mainApp .reader-box {
+    width:100% !important;
+    max-height:91dvh !important;
+    padding:40px 20px 30px !important;
+    clip-path:polygon(0 18px,18px 0,calc(100% - 45px) 0,100% 28px,100% calc(100% - 22px),calc(100% - 22px) 100%,22px 100%,0 calc(100% - 22px)) !important;
+  }
+  #mainApp .reader-box::before {font-size:8px !important;letter-spacing:.08em !important;margin-right:24px !important}
+  #mainApp .reader-box::after {font-size:8px !important;letter-spacing:.06em !important}
+  #mainApp .reader-box .reader-frame-heading {font-size:10px !important;margin-bottom:18px !important}
+  #mainApp .reader-box .reader-mark {width:32px;height:42px}
+  #mainApp .reader-box #viewTitle {font-size:clamp(21px,6vw,29px) !important}
+}
