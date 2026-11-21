@@ -895,3 +895,23 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
 @media (max-width:750px) {
   #mainApp .archive-instructions { font-size:11px !important; }
 }
+
+/* Place archive navigation hint at the top center of the archive stage. */
+#mainApp .archive-stage .archive-instructions {
+  top: 16px !important;
+  bottom: auto !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 10 !important;
+}
+@media (max-width:750px) {
+  #mainApp .archive-stage .archive-instructions {
+    order: -1 !important;
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 0 auto 4px !important;
+  }
+}
