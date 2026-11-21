@@ -767,3 +767,31 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
 @media (prefers-reduced-motion:reduce) {
   #mainApp .reader-box::after {animation:none !important;opacity:1 !important}
 }
+
+/* Phase 2L: stable status indicator — blink without changing geometry. */
+#mainApp .reader-box::after {
+  display:block !important;
+  content:'●  LINK ACTIVE     /     NRS INTER-TIMELINE RELAY     /     END OF TRANSMISSION' !important;
+  position:relative !important;
+  width:100% !important;
+  min-height:64px !important;
+  height:auto !important;
+  box-sizing:border-box !important;
+  margin:30px 0 0 !important;
+  padding:16px 0 12px !important;
+  line-height:1.7 !important;
+  overflow-wrap:anywhere;
+  transform:none !important;
+  transition:none !important;
+  animation:nrsRelayBlinkStable 3s steps(1,end) infinite !important;
+}
+@keyframes nrsRelayBlinkStable {
+  0%, 49%, 60%, 100% {opacity:1}
+  50%, 59% {opacity:0}
+}
+@media (max-width:750px) {
+  #mainApp .reader-box::after {min-height:80px !important}
+}
+@media (prefers-reduced-motion:reduce) {
+  #mainApp .reader-box::after {animation:none !important;opacity:1 !important}
+}
