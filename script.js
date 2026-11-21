@@ -4,6 +4,7 @@ let currentRecord = null;
 let soundOn = true;
 let allRecords = [];
 let typeToken = 0;
+let readerSession = 0;
 let editing = false;
 let saving = false;
 
@@ -111,7 +112,8 @@ async function api(path, options = {}) {
 async function typeLines(
   target,
   lines,
-  delay = 120
+  delay = 120,
+  isCurrent = () => true
 ) {
 
   target.textContent = "";
@@ -120,6 +122,7 @@ async function typeLines(
 
     for (const ch of line) {
 
+      if (!isCurrent()) return;
       target.textContent += ch;
 
       if (
@@ -134,6 +137,7 @@ async function typeLines(
 
     }
 
+    if (!isCurrent()) return;
     target.textContent += "\n";
 
     await wait(delay);
@@ -363,70 +367,70 @@ function renderRecords() {
     });
 
 }
-async function openReader(record) {
+function closeReader() {
+  if (editing || saving) return;
+  ++readerSession;
+  ++typeToken;
+  exitEditMode();
+  $("reader").classList.add("hidden");
+  $("decrypt").textContent = "";
+  $("viewMessage").textContent = "";
+  $("viewMessage").classList.remove("typing");
+  currentRecord = null;
+}
 
+async function openReader(record) {
   if (!record) return;
 
+  // Every opening gets its own session. Old decrypt animations cannot
+  // update a newer record after quick successive clicks.
+  const session = ++readerSession;
+  ++typeToken;
   exitEditMode();
   currentRecord = record;
 
-  $("reader").classList.remove("hidden");
+  // Populate the selected record's identity BEFORE revealing the reader.
+  const identity = record.team_name || "NRS / INTER-TIMELINE MESSAGE";
+  $("readerIdentity").textContent = identity;
+  $("viewTitle").textContent = identity;
+  $("viewMeta").textContent = `RECEIVED / TIME LINE #${timelineNo(record.id)}`;
+  $("viewMessage").textContent = "";
+  $("viewMessage").classList.remove("typing");
+  $("pinButton").textContent = record.is_pinned ? "고정 해제" : "고정";
+  $("adminTools").classList.toggle("hidden", !adminMode);
 
   $("messageView").classList.add("hidden");
+  $("decrypt").textContent = "";
   $("decrypt").classList.remove("hidden");
+  $("reader").classList.remove("hidden");
 
   await typeLines(
-
     $("decrypt"),
-
-    [
-      "SIGNAL RECEIVED...",
-      "Decrypting...",
-      "Synchronization Complete."
-    ],
-
-    210
-
+    ["SIGNAL RECEIVED...", "Decrypting...", "Synchronization Complete."],
+    210,
+    () => session === readerSession
   );
-
+  if (session !== readerSession) return;
   await wait(260);
+  if (session !== readerSession) return;
 
   $("decrypt").classList.add("hidden");
   $("messageView").classList.remove("hidden");
-
-  $("viewMeta").textContent =
-    `RECEIVED / TIME LINE #${timelineNo(record.id)}`;
-
-  $("viewTitle").textContent =
-    record.team_name;
-  if ($("readerIdentity")) $("readerIdentity").textContent = record.team_name || "NRS / INTER-TIMELINE MESSAGE";
-
-  $("pinButton").textContent =
-    record.is_pinned
-      ? "고정 해제"
-      : "고정";
-
-  $("adminTools").classList.toggle(
-    "hidden",
-    !adminMode
-  );
-
-  await typeMessage(
-    $("viewMessage"),
-    record.message
-  );
-
+  await typeMessage($("viewMessage"), record.message);
 }
 
-$("readerClose").addEventListener(
-  "click",
-  () => {
+$("readerClose").addEventListener("click", closeReader);
 
-    exitEditMode();
-    $("reader").classList.add("hidden");
+// Click only the overlay itself, never its inner reader panel.
+$("reader").addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) closeReader();
+});
 
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !$("reader").classList.contains("hidden")) {
+    if (!editing && !saving) closeReader();
   }
-);
+});
 
 $("adminToggle").addEventListener(
   "click",

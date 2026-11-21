@@ -13,6 +13,7 @@
   <main class="shell">
     <section id="boot" class="boot-screen"><div class="boot-box"><pre id="bootText"></pre><div class="boot-bar"><span id="bootFill"></span></div></div></section>
     <section id="mainApp" class="hidden">
+      <canvas id="nrsBlackhole" class="nrs-blackhole" aria-hidden="true"></canvas>
       <header class="archive-toolbar"><div class="archive-heading"><span class="archive-tag">NRS // INTER-TIMELINE RELAY</span><input id="searchInput" class="search archive-top-search" placeholder="시간선 / 팀 / 이름 / 메시지 검색" aria-label="기록 검색" /></div><div class="archive-actions"><button id="soundToggle" class="utility-btn">SOUND ON</button><button id="adminAccess" class="utility-btn" aria-label="관리자 접속" title="NRS / ADMIN ACCESS">⚙ <span>ADMIN ACCESS</span></button></div></header>
       <section class="archive-stage" aria-label="타임라인 관측 아카이브">
         <div class="archive-galaxy" aria-hidden="true"></div><div class="archive-galaxy-haze" aria-hidden="true"></div><div class="archive-grid" aria-hidden="true"></div>
@@ -106,5 +107,6 @@
   <audio id="sendSound" preload="auto"><source src="data:audio/wav;base64,UklGRrYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZIAAADAwMPEyMzQ1Njc5Ojs8PDxAPDw8Ojo6ODg4NjY2NDQ0MjIyMDAwLi4uLCwsKioqKCgoJiYmJCQkIiIiICAgIiIiJCQkJiYmKCgoKioqLCwsLi4uMDAwMjIyNDQ0NjY2ODg4Ojo6PDw8QEBAQkJCQ0ND" type="audio/wav" /></audio>
   <script src="./intro.js"></script>
   <script src="./script.js"></script>
+<script src="./blackhole.js" defer></script>
 </body>
 </html>

@@ -83,3 +83,28 @@
 #mainApp .reader-box #viewTitle{color:#ffd2a7}
 @media(max-width:750px){#mainApp .archive-toolbar{padding:12px 5px;gap:6px}.archive-heading{gap:8px;flex-wrap:wrap}.archive-tag{font-size:8px}.archive-top-search{width:min(210px,46vw)!important;font-size:10px!important}.archive-stage{height:calc(100dvh - 100px);min-height:580px}.archive-stage>.featured-record{right:3%;top:8%}.archive-controls{bottom:44px;right:12px}.archive-instructions{font-size:7px}.reader-frame-heading{font-size:10px}.reader-mark{width:38px;height:52px}#mainApp .reader-box{padding:44px 22px 30px}}
 @media(prefers-reduced-motion:reduce){.archive-galaxy{animation:none!important}}
+
+/* Phase 2E — fullscreen original amber accretion disk, legible frosted relay glass */
+html,body{min-height:100%;background:#05070b!important}
+body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+#mainApp{width:100%!important;max-width:none!important;padding:0 24px 50px!important;background:transparent!important;min-height:100dvh}
+.nrs-blackhole{position:fixed;inset:0;z-index:-2;display:block;width:100vw;height:100dvh;pointer-events:none;opacity:.95}
+#mainApp .archive-stage{height:calc(100dvh - 80px);min-height:640px;max-height:none;background:transparent!important;isolation:auto;overflow:hidden}
+.archive-galaxy,.archive-galaxy-haze{display:none!important}
+.archive-grid{opacity:.14;z-index:0}
+.archive-world,.archive-center,.archive-instructions{z-index:2}
+.archive-records .record{background:rgba(12,17,24,.55)!important;backdrop-filter:blur(19px) saturate(1.12)!important;-webkit-backdrop-filter:blur(19px) saturate(1.12)!important;border:1px solid rgba(255,173,106,.66)!important;box-shadow:0 3px 30px rgba(0,0,0,.38),inset 0 1px rgba(255,220,179,.09)!important}
+.archive-records .record:hover,.archive-records .record:focus-visible{background:rgba(19,25,33,.78)!important;box-shadow:0 0 24px rgba(255,158,75,.46),0 4px 35px rgba(0,0,0,.35)!important}
+.archive-stage>.featured-record{background:rgba(23,21,25,.7)!important;backdrop-filter:blur(20px) saturate(1.1);-webkit-backdrop-filter:blur(20px) saturate(1.1)}
+.archive-tag,.archive-instructions,.archive-count{color:#eac4a5!important;text-shadow:0 1px 9px #050505;font-weight:600}
+.archive-top-search{background:rgba(8,13,20,.7)!important;border-color:rgba(255,179,119,.55)!important;color:#ffe1c2!important}
+.archive-top-search::placeholder{color:#c9a78e!important;opacity:1}
+.archive-actions .utility-btn{color:#f8c7a3!important;border-color:rgba(249,160,96,.7)!important;background:rgba(8,11,17,.6)!important}
+.archive-instructions{bottom:44px!important}
+#mainApp footer{bottom:16px!important;color:#ffe0bb!important;font-size:12px!important;text-shadow:0 1px 12px #000!important}
+.archive-center{text-shadow:0 2px 20px #050505,0 0 45px #000!important}
+.archive-center h1{text-shadow:0 0 22px rgba(255,140,51,.6),0 3px 25px #000!important}
+#mainApp .reader-box{border-width:2px;box-shadow:inset 0 0 0 5px rgba(255,144,75,.11),inset 0 0 0 11px rgba(8,12,18,.85),0 0 60px rgba(245,130,57,.18);background:linear-gradient(150deg,rgba(21,27,37,.97),rgba(10,13,22,.98))}
+#mainApp .reader-box::before{content:'NRS // SECURE INTER-TIMELINE ARCHIVE  •  DECRYPTED SIGNAL';display:block;letter-spacing:.18em;color:#e2a274;font-size:9px;border-bottom:1px solid rgba(248,150,81,.32);padding-bottom:12px;margin:-18px 0 18px}
+#mainApp .reader-box::after{content:'NRS   /   RELAY CONNECTION ESTABLISHED  ━━━━━━━━━  ARCHIVE SYSTEM';display:block;margin-top:25px;padding-top:14px;border-top:1px solid rgba(248,150,81,.35);font-size:9px;letter-spacing:.14em;color:#c99673}
+@media(max-width:750px){#mainApp{padding:0 8px 48px!important}#mainApp .archive-stage{height:calc(100dvh - 72px);min-height:590px}.archive-instructions{bottom:43px!important;font-size:7px!important}#mainApp footer{bottom:15px!important}#mainApp .reader-box::before,#mainApp .reader-box::after{font-size:7px}}
