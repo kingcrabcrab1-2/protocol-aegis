@@ -113,17 +113,29 @@
     line.style.left=x+'px';line.style.top=y+'px';line.style.width=len+'px';line.style.transform=`rotate(${ang}rad)`;overlay.append(line);
     setTimeout(()=>line.remove(),900);burst(x,y);
   });
-  // Authenticated stamp appears only after the existing decrypt stage finishes.
-  const box=reader.querySelector('.reader-box'),messageView=document.getElementById('messageView');
-  if(box&&messageView){
-    const stamp=document.createElement('div');stamp.className='nrs-verified-stamp';stamp.setAttribute('aria-hidden','true');stamp.textContent='ARCHIVE AUTHENTICATED';box.append(stamp);
-    const update=()=>{
-      const shown=!reader.classList.contains('hidden')&&!messageView.classList.contains('hidden');
-      stamp.classList.toggle('nrs-stamp-show',shown);
+  // Display authentication after the message text has finished rendering.
+  const messageView=document.getElementById('messageView');
+  const messageText=document.getElementById('viewMessage');
+  if(messageView&&messageText){
+    const stamp=document.createElement('div');
+    stamp.className='nrs-verified-stamp';
+    stamp.setAttribute('aria-hidden','true');
+    stamp.textContent='ARCHIVE AUTHENTICATED';
+    messageText.insertAdjacentElement('afterend',stamp);
+    let finishTimer=0;
+    const hide=()=>{clearTimeout(finishTimer);stamp.classList.remove('nrs-stamp-show');};
+    const schedule=()=>{
+      hide();
+      if(reader.classList.contains('hidden')||messageView.classList.contains('hidden'))return;
+      finishTimer=setTimeout(()=>{
+        if(!reader.classList.contains('hidden')&&!messageView.classList.contains('hidden')&&messageText.textContent.trim())
+          stamp.classList.add('nrs-stamp-show');
+      },850);
     };
-    update();
-    new MutationObserver(update).observe(messageView,{attributes:true,attributeFilter:['class']});
-    new MutationObserver(update).observe(reader,{attributes:true,attributeFilter:['class']});
+    new MutationObserver(schedule).observe(messageText,{childList:true,characterData:true,subtree:true});
+    new MutationObserver(schedule).observe(messageView,{attributes:true,attributeFilter:['class']});
+    new MutationObserver(schedule).observe(reader,{attributes:true,attributeFilter:['class']});
+    schedule();
   }
 })();
 

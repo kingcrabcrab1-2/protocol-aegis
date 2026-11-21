@@ -105,3 +105,15 @@
 @media(prefers-reduced-motion:reduce){
   #mainApp .reader-box .nrs-verified-stamp{transition:none!important}
 }
+
+/* Stamp belongs to the message content, below the body and to its lower right. */
+#mainApp #messageView .nrs-verified-stamp{
+  position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;
+  display:block;width:max-content;max-width:100%;margin:24px 0 12px auto;
+  z-index:1;float:none;clear:both;
+}
+@media(max-width:750px){
+  #mainApp #messageView .nrs-verified-stamp{
+    margin:18px 0 10px auto;max-width:100%;font-size:11px;
+  }
+}
