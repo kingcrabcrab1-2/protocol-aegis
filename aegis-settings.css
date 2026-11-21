@@ -48,3 +48,11 @@ html.nrs-off-circuit #mainApp .nrs-p6-circuit{display:none!important;animation:n
 html.nrs-off-reactive #mainApp .archive-records .record::after{display:none!important;animation:none!important}
 html.nrs-off-expansion #mainApp .nrs-p6-expansion{display:none!important;animation:none!important}
 html.nrs-off-reconnect #mainApp .radar-core.nrs-p6-reconnect{display:none!important;animation:none!important}
+
+/* PHASE 8 individual switches */
+html.nrs-off-p8-singularity #mainApp .nrs-p8-singularity{display:none!important;animation:none!important}
+html.nrs-off-p8-shock #mainApp .nrs-p8-shock{display:none!important;animation:none!important}
+html.nrs-off-p8-fracture #mainApp .nrs-p8-fracture{display:none!important;animation:none!important}
+html.nrs-off-p8-cube #mainApp .nrs-p8-cube{display:none!important;animation:none!important}
+html.nrs-off-p8-overdrive #mainApp .nrs-p8-overdrive{display:none!important;animation:none!important}
+html.nrs-off-p8-gate #mainApp .nrs-p8-gate{display:none!important;animation:none!important}

@@ -1,6 +1,6 @@
 /* NRS visual settings: local to this browser; does not modify archive data. */
 (()=>{'use strict';
-const entries=[["radar", "레이더 탐지"], ["trails", "시공간 잔상"], ["target", "메시지 타겟팅"], ["decrypt", "해독 강조"], ["sync", "시간선 동기화 펄스"], ["interference", "신호 간섭"], ["iris", "관측 장치 조리개"], ["relay", "데이터 전송 라인"], ["particles", "데이터 입자 흡수"], ["stamp", "ARCHIVE AUTHENTICATED 도장"], ["parallax", "홀로그램 깊이감"], ["packets", "데이터 패킷 유영"], ["sheen", "홀로그램 유리 반사"], ["ring", "복호화 진행 링"], ["triangle", "시간선 삼각측량"], ["jump", "시간선 이동 전환"], ["materialize", "기록 실체화"], ["echo", "잔류 신호 에코"], ["clearance", "보안 등급 스캔"], ["beacon", "신호 비콘"], ["grid", "공간 격자 재구성"], ["reconstruct", "제목 데이터 복구"], ["optical", "수직 광학 스캔"], ["circuit", "테두리 회로 점등"], ["reactive", "광원 반응형 홀로그램"], ["expansion", "관측 시야 확장"], ["reconnect", "터미널 재접속"]];
+const entries=[["radar", "레이더 탐지"], ["trails", "시공간 잔상"], ["target", "메시지 타겟팅"], ["decrypt", "해독 강조"], ["sync", "시간선 동기화 펄스"], ["interference", "신호 간섭"], ["iris", "관측 장치 조리개"], ["relay", "데이터 전송 라인"], ["particles", "데이터 입자 흡수"], ["stamp", "ARCHIVE AUTHENTICATED 도장"], ["parallax", "홀로그램 깊이감"], ["packets", "데이터 패킷 유영"], ["sheen", "홀로그램 유리 반사"], ["ring", "복호화 진행 링"], ["triangle", "시간선 삼각측량"], ["jump", "시간선 이동 전환"], ["materialize", "기록 실체화"], ["echo", "잔류 신호 에코"], ["clearance", "보안 등급 스캔"], ["beacon", "신호 비콘"], ["grid", "공간 격자 재구성"], ["reconstruct", "제목 데이터 복구"], ["optical", "수직 광학 스캔"], ["circuit", "테두리 회로 점등"], ["reactive", "광원 반응형 홀로그램"], ["expansion", "관측 시야 확장"], ["reconnect", "터미널 재접속"], ["p8-singularity", "시공간 특이점 개방"], ["p8-shock", "에너지 충격파"], ["p8-fracture", "시공간 균열"], ["p8-cube", "홀로그램 데이터 큐브"], ["p8-overdrive", "관측 코어 오버드라이브"], ["p8-gate", "차원 게이트 개방"]];
 const KEY='nrs_visual_settings_v1';
 let stored={};try{stored=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch{}
 const values={};for(const [key] of entries)values[key]=stored[key]!==false;
@@ -12,7 +12,8 @@ window.NRSVisualSettings={enabled,values};apply();
   ['레이더 · 공간',['radar','trails','target','sync','iris','triangle','jump','expansion','grid']],
   ['메시지 · 인증',['decrypt','stamp','ring','materialize','clearance','reconstruct','optical','circuit']],
   ['홀로그램 · 데이터',['relay','particles','parallax','packets','sheen','echo','beacon','reactive']],
-  ['시스템 · 환경',['interference','reconnect']]
+  ['시스템 · 환경',['interference','reconnect']],
+  ['PHASE 8 · 고출력 연출',['p8-singularity','p8-shock','p8-fracture','p8-cube','p8-overdrive','p8-gate']]
  ];
  function init(){
   const admin=document.getElementById('adminComposer');if(!admin)return;

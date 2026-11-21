@@ -1,0 +1,26 @@
+/* PHASE 8: visually prominent but short-lived, pointer-transparent overlays. */
+#mainApp .archive-stage{isolation:isolate}
+#mainApp .nrs-p8{pointer-events:none!important;position:absolute;opacity:0;visibility:hidden;contain:paint;will-change:transform,opacity}
+#mainApp .nrs-p8.active{visibility:visible}
+#mainApp .nrs-p8-singularity,#mainApp .nrs-p8-overdrive,#mainApp .nrs-p8-shock{z-index:5;transform:translate(-50%,-50%);border-radius:50%}
+#mainApp .nrs-p8-singularity{width:min(55vw,520px);aspect-ratio:1;background:repeating-conic-gradient(from 12deg,transparent 0deg 17deg,rgba(255,170,76,.85) 18deg 19deg,transparent 21deg 33deg),radial-gradient(circle,rgba(255,240,187,.95) 0%,rgba(255,135,32,.52) 6%,rgba(255,127,35,.15) 25%,transparent 58%);mask-image:radial-gradient(circle,black 0 55%,transparent 74%);filter:drop-shadow(0 0 22px #ff8b37)}
+#mainApp .nrs-p8-singularity.active{animation:nrsP8Singularity 2.25s ease-in-out both}
+@keyframes nrsP8Singularity{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(0)}20%{opacity:.85}55%{opacity:1;transform:translate(-50%,-50%) scale(1.05) rotate(140deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(.65) rotate(260deg)}}
+#mainApp .nrs-p8-overdrive{width:min(46vw,440px);aspect-ratio:1;border:3px dashed #ffb268;box-shadow:0 0 18px #ff8c3b,inset 0 0 35px rgba(255,137,46,.4);background:repeating-conic-gradient(transparent 0 20deg,rgba(255,164,78,.32) 21deg 24deg,transparent 25deg 40deg);mask-image:radial-gradient(circle,transparent 0 22%,#000 26% 70%,transparent 75%)}
+#mainApp .nrs-p8-overdrive.active{animation:nrsP8Overdrive 1.5s ease-out both}
+@keyframes nrsP8Overdrive{0%{opacity:0;transform:translate(-50%,-50%) scale(.75) rotate(0)}25%{opacity:.9}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.2) rotate(240deg)}}
+#mainApp .nrs-p8-shock{width:110px;height:110px;border:3px solid #ffd6a2;box-shadow:0 0 24px #ff963e,inset 0 0 12px #ff963e}
+#mainApp .nrs-p8-shock.active{animation:nrsP8Shock .85s ease-out both}
+@keyframes nrsP8Shock{0%{opacity:.95;transform:translate(-50%,-50%) scale(.25)}55%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(3.4)}}
+#mainApp .nrs-p8-fracture{inset:4% 8%;z-index:2;background:linear-gradient(126deg,transparent 0 46%,rgba(255,204,122,.9) 46.2%,rgba(255,117,30,.3) 46.6%,transparent 47%),linear-gradient(145deg,transparent 0 57%,rgba(255,175,79,.72) 57.2%,transparent 57.7%),linear-gradient(110deg,transparent 0 65%,rgba(255,194,110,.5) 65.2%,transparent 65.6%);filter:drop-shadow(0 0 10px #ff873a)}
+#mainApp .nrs-p8-fracture.active{animation:nrsP8Fracture 1.65s ease-in-out both}
+@keyframes nrsP8Fracture{0%,100%{opacity:0;transform:scaleX(.93)}22%,70%{opacity:.8;transform:scaleX(1)}}
+#mainApp .reader-box .nrs-p8-cube,#mainApp .reader-box .nrs-p8-gate{z-index:4;top:50%;left:50%;transform:translate(-50%,-50%)}
+#mainApp .reader-box .nrs-p8-cube{width:115px;height:115px;border:2px solid rgba(255,196,120,.9);box-shadow:0 0 22px #ff9946,inset 0 0 20px rgba(255,143,45,.35);background:linear-gradient(45deg,transparent 46%,rgba(255,190,112,.6) 50%,transparent 54%),linear-gradient(-45deg,transparent 46%,rgba(255,190,112,.6) 50%,transparent 54%)}
+#mainApp .reader-box .nrs-p8-cube.active{animation:nrsP8Cube 1.2s ease-in-out both}
+@keyframes nrsP8Cube{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-30deg)}30%{opacity:.85}70%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5) rotate(120deg)}}
+#mainApp .reader-box .nrs-p8-gate{width:min(65vw,360px);aspect-ratio:1;border:3px solid #ffb46a;border-radius:50%;box-shadow:0 0 32px rgba(255,143,43,.8),inset 0 0 40px rgba(255,145,48,.3);background:repeating-conic-gradient(from 20deg,rgba(255,165,71,.2) 0 9deg,transparent 9deg 25deg);mask-image:radial-gradient(circle,transparent 0 35%,#000 39% 70%,transparent 76%)}
+#mainApp .reader-box .nrs-p8-gate.active{animation:nrsP8Gate 1s ease-out both}
+@keyframes nrsP8Gate{0%{opacity:0;transform:translate(-50%,-50%) scale(.15) rotate(-50deg)}45%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25) rotate(90deg)}}
+@media(max-width:750px){#mainApp .nrs-p8-singularity,#mainApp .nrs-p8-overdrive,#mainApp .nrs-p8-fracture,#mainApp .reader-box .nrs-p8-cube{display:none!important}#mainApp .nrs-p8-shock{width:60px;height:60px;filter:none}#mainApp .reader-box .nrs-p8-gate{width:min(65vw,220px);filter:none;box-shadow:0 0 12px rgba(255,143,43,.45)}}
+@media(prefers-reduced-motion:reduce){#mainApp .nrs-p8{display:none!important;animation:none!important}}
