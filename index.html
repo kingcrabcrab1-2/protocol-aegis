@@ -13,14 +13,14 @@
   <main class="shell">
     <section id="boot" class="boot-screen"><div class="boot-box"><pre id="bootText"></pre><div class="boot-bar"><span id="bootFill"></span></div></div></section>
     <section id="mainApp" class="hidden">
-      <header class="archive-toolbar"><span class="archive-tag">NRS // INTER-TIMELINE RELAY</span><div class="archive-actions"><button id="soundToggle" class="utility-btn">SOUND ON</button><button id="adminAccess" class="utility-btn" aria-label="관리자 접속" title="NRS / ADMIN ACCESS">⚙ <span>ADMIN ACCESS</span></button></div></header>
+      <header class="archive-toolbar"><div class="archive-heading"><span class="archive-tag">NRS // INTER-TIMELINE RELAY</span><input id="searchInput" class="search archive-top-search" placeholder="시간선 / 팀 / 이름 / 메시지 검색" aria-label="기록 검색" /></div><div class="archive-actions"><button id="soundToggle" class="utility-btn">SOUND ON</button><button id="adminAccess" class="utility-btn" aria-label="관리자 접속" title="NRS / ADMIN ACCESS">⚙ <span>ADMIN ACCESS</span></button></div></header>
       <section class="archive-stage" aria-label="타임라인 관측 아카이브">
-        <div class="archive-galaxy" aria-hidden="true"></div><div class="archive-grid" aria-hidden="true"></div>
+        <div class="archive-galaxy" aria-hidden="true"></div><div class="archive-galaxy-haze" aria-hidden="true"></div><div class="archive-grid" aria-hidden="true"></div>
         <div id="archiveWorld" class="archive-world"><div class="radar-core" aria-hidden="true"><div class="radar-sweep"></div><div class="radar-ring ring-one"></div><div class="radar-ring ring-two"></div><div class="radar-cross"></div></div><div id="records" class="records archive-records"><p class="muted">시간선 기록을 불러오는 중...</p></div></div>
         <div class="archive-center"><p class="archive-eyebrow">NRS MAIN FACILITY / GARDINERS ISLAND</p><h1>PROTOCOL : AEGIS</h1><p class="archive-subtitle">ARCHIVED INTER-TIMELINE RELAY TERMINAL</p><div class="archive-signal">◉ &nbsp; SIGNAL ONLINE <span> / </span> TIMELINE MONITORING</div></div>
         <div class="archive-instructions">SCROLL TO ROTATE <span>·</span> SELECT SIGNAL TO DECRYPT</div>
       </section>
-      <section class="archive-controls"><div class="archive-search"><input id="searchInput" class="search" placeholder="시간선 검색 / 팀 번호 / 이름 / 메시지" /><select id="sortSelect" class="select"><option value="asc">오래된 시간선순</option><option value="desc">최신 시간선순</option></select></div><span id="archiveCount" class="archive-count">SIGNALS / --</span></section>
+      <section class="archive-controls"><span id="archiveCount" class="archive-count">SIGNALS / --</span></section>
       <section id="adminDock" class="admin-dock hidden" aria-label="관리자 패널"><div class="admin-dock-header"><span>NRS / ADMIN CONTROL</span><button id="adminDockClose" class="close-btn" aria-label="관리자 패널 닫기">×</button></div>
         <aside class="terminal-panel transmit-panel">
           <div class="panel-heading">ADMIN ACCESS</div>
@@ -98,7 +98,7 @@
 </div>
         </aside>
       </section>
-  <section id="reader" class="reader hidden"><div class="reader-box"><button id="readerClose" class="close-btn">×</button><div id="decrypt" class="decrypt"></div><div id="messageView" class="hidden"><p id="viewMeta" class="kicker"></p><h2 id="viewTitle"></h2><pre id="viewMessage"></pre><textarea id="editMessage" class="hidden" maxlength="10000" aria-label="메시지 수정" spellcheck="false"></textarea><div id="adminTools" class="admin-tools hidden"><button id="editButton" class="utility-btn">수정</button><button id="pinButton" class="utility-btn">고정/해제</button><button id="protectButton" class="utility-btn">보호 지정/해제</button><button id="deleteButton" class="danger-btn">삭제</button></div><div id="editTools" class="admin-tools hidden"><button id="saveEditButton" class="utility-btn">저장</button><button id="cancelEditButton" class="utility-btn">취소</button><span id="editStatus" class="edit-status" role="alert"></span></div></div></div></section>
+  <section id="reader" class="reader hidden"><div class="reader-box"><div class="reader-frame-heading"><span id="readerIdentity">NRS / INTER-TIMELINE MESSAGE</span><img src="./nrs-mark.png" alt="NRS 기관 문장" class="reader-mark" /></div><button id="readerClose" class="close-btn">×</button><div id="decrypt" class="decrypt"></div><div id="messageView" class="hidden"><p id="viewMeta" class="kicker"></p><h2 id="viewTitle"></h2><pre id="viewMessage"></pre><textarea id="editMessage" class="hidden" maxlength="10000" aria-label="메시지 수정" spellcheck="false"></textarea><div id="adminTools" class="admin-tools hidden"><button id="editButton" class="utility-btn">수정</button><button id="pinButton" class="utility-btn">고정/해제</button><button id="protectButton" class="utility-btn">보호 지정/해제</button><button id="deleteButton" class="danger-btn">삭제</button></div><div id="editTools" class="admin-tools hidden"><button id="saveEditButton" class="utility-btn">저장</button><button id="cancelEditButton" class="utility-btn">취소</button><span id="editStatus" class="edit-status" role="alert"></span></div></div></div></section>
       <footer>written by. hamge</footer>
     </section>
   </main>

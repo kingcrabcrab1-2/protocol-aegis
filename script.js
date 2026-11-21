@@ -260,8 +260,7 @@ function renderRecords() {
       .trim()
       .toLowerCase();
 
-  const asc =
-    $("sortSelect").value === "asc";
+  const asc = true;
 
   let filtered =
     allRecords.filter((item) =>
@@ -330,8 +329,11 @@ function renderRecords() {
   regular.forEach((node, i) => {
     const a = i * 2.399963229728653 + .45;
     const layer = i % 4;
-    const rx = Math.max(245, stageWidth * (.28 + layer * .055));
-    const ry = Math.max(175, stageHeight * (.28 + (layer % 3) * .045));
+    // A circular safe radius ensures cards stay visible even while the scene rotates.
+    const safeRadius = Math.max(140, Math.min(stageWidth * .35, stageHeight * .5 - 112));
+    const radius = safeRadius * [.70, .82, .93, 1][layer];
+    const rx = radius;
+    const ry = radius;
     node.style.setProperty("--pos-x", `${Math.cos(a) * rx}px`);
     node.style.setProperty("--pos-y", `${Math.sin(a) * ry}px`);
     node.style.setProperty("--card-scale", `${[.88, 1, .93, 1.06][layer]}`);
@@ -397,6 +399,7 @@ async function openReader(record) {
 
   $("viewTitle").textContent =
     record.team_name;
+  if ($("readerIdentity")) $("readerIdentity").textContent = record.team_name || "NRS / INTER-TIMELINE MESSAGE";
 
   $("pinButton").textContent =
     record.is_pinned
@@ -775,10 +778,7 @@ $("searchInput").addEventListener(
   renderRecords
 );
 
-$("sortSelect").addEventListener(
-  "change",
-  renderRecords
-);
+
 // 최초 실행
 function createAegisCursorHud() {
 

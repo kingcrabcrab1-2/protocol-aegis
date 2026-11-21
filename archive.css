@@ -58,3 +58,28 @@
 #mainApp footer{left:50%!important;right:auto!important;transform:translateX(-50%);text-align:center!important;bottom:19px!important;color:#e8b48c!important;text-shadow:0 0 14px rgba(255,165,91,.32);font-size:12px!important;letter-spacing:.12em}
 @media(max-width:750px){.shell:has(#mainApp:not(.hidden)){width:calc(100% - 8px)}#mainApp{padding:0 4px 44px}.archive-stage{height:72dvh;min-height:470px}.archive-records .record{width:118px;min-height:55px;padding:8px!important}.archive-stage>.featured-record{right:3%;top:5%;width:160px;min-height:70px;padding:10px!important}.archive-stage>.featured-record .record-name{font-size:12px!important}.archive-center{width:85%}.archive-center h1{font-size:23px}#mainApp footer{left:50%!important}}
 @media(prefers-reduced-motion:reduce){.archive-galaxy,.archive-stage>.featured-record{animation:none!important}}
+
+/* Phase 2D: unobstructed signals, rotating galactic backdrop, inline search and NRS reader */
+#mainApp{padding-bottom:44px}
+#mainApp .archive-toolbar{padding:18px 14px 12px;align-items:center}
+.archive-heading{display:flex;align-items:center;gap:24px;min-width:0;flex:1}
+.archive-top-search{width:clamp(170px,24vw,330px)!important;min-width:0!important;height:31px!important;margin:0!important;padding:5px 12px!important;font-size:11px!important;background:rgba(12,17,25,.73)!important;border:1px solid rgba(255,166,105,.36)!important;color:#f0c8a8!important}
+.archive-top-search:focus{border-color:#ffb880!important;box-shadow:0 0 15px rgba(255,156,85,.16)!important}
+.archive-stage{height:calc(100dvh - 120px);min-height:700px;max-height:none;overflow:hidden;background:radial-gradient(ellipse 50% 50% at 50% 48%,rgba(205,133,85,.21),rgba(70,96,129,.12) 50%,rgba(8,12,21,.10) 85%)}
+.archive-galaxy{inset:-52%;opacity:.28;filter:blur(28px) saturate(.75) brightness(.82);background-image:linear-gradient(90deg,rgba(11,16,27,.35),rgba(30,20,24,.18)),url('./galaxy-reference.jpg');background-position:center;background-size:cover;animation:galaxyDrift 210s linear infinite;transform-origin:center}
+.archive-galaxy:after{display:none}
+.archive-galaxy-haze{position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 38% 34% at 50% 48%,rgba(243,154,105,.12),transparent 85%),radial-gradient(ellipse 64% 60% at 50% 52%,transparent 25%,rgba(5,9,17,.48) 95%)}
+.archive-grid{opacity:.33}
+.archive-records .record{min-height:66px;animation:nrsFloat 6s ease-in-out infinite alternate;animation-delay:var(--float-delay);transition:border-color .25s,box-shadow .25s,background .25s,scale .25s}
+.archive-records .record:hover,.archive-records .record:focus-visible{scale:1.17}
+.archive-stage>.featured-record{top:10%;right:4%}
+.archive-instructions{bottom:18px}
+.archive-controls{position:absolute;bottom:50px;right:32px;width:auto;max-width:none;margin:0;pointer-events:none;opacity:.75}
+#mainApp .reader{background:rgba(3,7,13,.70)}
+#mainApp .reader-box{width:min(850px,calc(100vw - 34px));padding:54px 45px 40px;background:linear-gradient(145deg,rgba(24,30,38,.98),rgba(13,18,26,.98));border:2px solid rgba(238,135,64,.84);clip-path:polygon(0 25px,25px 0,37% 0,40% 12px,60% 12px,63% 0,calc(100% - 28px) 0,100% 28px,100% calc(100% - 22px),calc(100% - 22px) 100%,22px 100%,0 calc(100% - 22px));box-shadow:inset 0 0 0 5px rgba(255,142,69,.07),0 0 65px rgba(243,126,58,.2)}
+.reader-frame-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:-25px 0 20px;border-bottom:1px solid rgba(247,154,83,.38);padding:0 35px 15px 0;color:#ffbc83;letter-spacing:.12em;font-size:13px;font-weight:700}
+.reader-mark{width:52px;height:70px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(255,157,91,.28))}
+#mainApp .reader-box #readerClose{z-index:5}
+#mainApp .reader-box #viewTitle{color:#ffd2a7}
+@media(max-width:750px){#mainApp .archive-toolbar{padding:12px 5px;gap:6px}.archive-heading{gap:8px;flex-wrap:wrap}.archive-tag{font-size:8px}.archive-top-search{width:min(210px,46vw)!important;font-size:10px!important}.archive-stage{height:calc(100dvh - 100px);min-height:580px}.archive-stage>.featured-record{right:3%;top:8%}.archive-controls{bottom:44px;right:12px}.archive-instructions{font-size:7px}.reader-frame-heading{font-size:10px}.reader-mark{width:38px;height:52px}#mainApp .reader-box{padding:44px 22px 30px}}
+@media(prefers-reduced-motion:reduce){.archive-galaxy{animation:none!important}}
