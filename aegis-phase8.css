@@ -24,3 +24,9 @@
 @keyframes nrsP8Gate{0%{opacity:0;transform:translate(-50%,-50%) scale(.15) rotate(-50deg)}45%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25) rotate(90deg)}}
 @media(max-width:750px){#mainApp .nrs-p8-singularity,#mainApp .nrs-p8-overdrive,#mainApp .nrs-p8-fracture,#mainApp .reader-box .nrs-p8-cube{display:none!important}#mainApp .nrs-p8-shock{width:60px;height:60px;filter:none}#mainApp .reader-box .nrs-p8-gate{width:min(65vw,220px);filter:none;box-shadow:0 0 12px rgba(255,143,43,.45)}}
 @media(prefers-reduced-motion:reduce){#mainApp .nrs-p8{display:none!important;animation:none!important}}
+
+/* NRS relay status wording: preserve layout and animation. */
+#mainApp .reader::after,
+#mainApp .reader-box::after {
+  content: "●  LINK ACTIVE     /     NRS INTER-TIMELINE RELAY     /     MONITORING ACTIVE" !important;
+}
