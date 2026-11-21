@@ -1,0 +1,16 @@
+/* NRS visual effects layer — intentionally isolated from archive layout */
+#mainApp .archive-stage{--nrs-distort-x:50%;--nrs-distort-y:50%}
+#nrsEffectsCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:.75}
+#nrsSignalWave{position:fixed;right:26px;bottom:45px;width:156px;height:32px;z-index:9;pointer-events:none;opacity:.62;filter:drop-shadow(0 0 6px rgba(255,140,72,.4))}
+#nrsSignalWave path{fill:none;stroke:#ffa56c;stroke-width:1.3;vector-effect:non-scaling-stroke}
+#mainApp .archive-stage::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 26% 29% at var(--nrs-distort-x) var(--nrs-distort-y),rgba(255,146,80,.065),transparent 73%);mix-blend-mode:screen;animation:nrsDistortBreath 9s ease-in-out infinite}
+@keyframes nrsDistortBreath{50%{opacity:.4;filter:blur(8px)}}
+#mainApp .archive-records .record{--nrs-target-opacity:0}
+#mainApp .archive-records .record:hover,#mainApp .archive-records .record:focus-visible{--nrs-target-opacity:1}
+#mainApp .archive-records .record .nrs-target{position:absolute;inset:4px;z-index:4;pointer-events:none;opacity:var(--nrs-target-opacity);transition:opacity .2s;background:linear-gradient(#ffba81,#ffba81) left top/13px 1px no-repeat,linear-gradient(#ffba81,#ffba81) left top/1px 13px no-repeat,linear-gradient(#ffba81,#ffba81) right top/13px 1px no-repeat,linear-gradient(#ffba81,#ffba81) right top/1px 13px no-repeat,linear-gradient(#ffba81,#ffba81) left bottom/13px 1px no-repeat,linear-gradient(#ffba81,#ffba81) left bottom/1px 13px no-repeat,linear-gradient(#ffba81,#ffba81) right bottom/13px 1px no-repeat,linear-gradient(#ffba81,#ffba81) right bottom/1px 13px no-repeat;filter:drop-shadow(0 0 4px #ff8b4c)}
+#mainApp .archive-records .record.nrs-detected{animation:nrsDetectFlash .7s ease-out !important}
+@keyframes nrsDetectFlash{0%,100%{filter:brightness(1)}35%{filter:brightness(1.55) drop-shadow(0 0 9px rgba(255,149,70,.65))}}
+#mainApp .reader-box.nrs-decrypting{box-shadow:0 0 32px rgba(255,152,80,.28),inset 0 0 24px rgba(255,152,80,.09)!important}
+#mainApp .reader-box.nrs-decrypting #decrypt{letter-spacing:.045em;text-shadow:0 0 12px rgba(255,169,98,.45)}
+@media(max-width:750px){#nrsEffectsCanvas,#nrsSignalWave{display:none!important}#mainApp .archive-stage::before{display:none!important}#mainApp .archive-records .record .nrs-target{display:none!important}}
+@media(prefers-reduced-motion:reduce){#nrsEffectsCanvas,#nrsSignalWave{display:none!important}#mainApp .archive-stage::before{animation:none!important}#mainApp .archive-records .record.nrs-detected{animation:none!important}}
