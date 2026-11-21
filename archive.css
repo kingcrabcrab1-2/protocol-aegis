@@ -353,3 +353,246 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
  #mainApp .archive-records .record::after,
  #mainApp .archive-records .record.featured-record::after{right:6px !important}
 }
+
+
+/* Mobile-only accessibility layout.
+   Desktop/orbital presentation above remains unchanged. */
+@media (max-width: 750px) {
+  /* Give the mobile archive a normal vertical document flow. */
+  #mainApp {
+    padding: 0 12px 76px !important;
+    min-height: 100dvh;
+  }
+
+  #mainApp .archive-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 4px 12px !important;
+  }
+
+  #mainApp .archive-heading {
+    width: 100%;
+    flex: 1 1 100%;
+    gap: 10px;
+  }
+
+  #mainApp .archive-top-search {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 40px !important;
+    font-size: 13px !important;
+  }
+
+  #mainApp .archive-actions {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  #mainApp .archive-actions .utility-btn {
+    min-height: 38px;
+    padding: 9px 12px !important;
+  }
+
+  /* Hide the orbit/radar geometry only on narrow screens. */
+  #mainApp .archive-stage {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 18px 0 22px;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+
+  #mainApp .archive-world,
+  #mainApp .radar-core,
+  #mainApp .radar-sweep,
+  #mainApp .radar-ring,
+  #mainApp .archive-grid {
+    display: none !important;
+  }
+
+  #mainApp .archive-center {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    order: 0;
+    width: 100% !important;
+    max-width: none;
+    margin: 0 auto 8px;
+    padding: 18px 10px !important;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(22,25,33,.72), rgba(34,27,29,.48));
+    border: 1px solid rgba(255,170,119,.16);
+    text-align: center;
+  }
+
+  #mainApp .archive-center h1 {
+    font-size: clamp(21px, 6vw, 27px) !important;
+    line-height: 1.25;
+  }
+
+  #mainApp .archive-eyebrow,
+  #mainApp .archive-subtitle {
+    font-size: 9px !important;
+    line-height: 1.5;
+  }
+
+  #mainApp .archive-signal {
+    margin-top: 12px;
+    font-size: 9px;
+  }
+
+  /* Convert the absolute-positioned orbit cards into a readable list. */
+  #mainApp .archive-records {
+    position: relative !important;
+    inset: auto !important;
+    order: 1;
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 2px 1px 8px;
+    pointer-events: auto !important;
+  }
+
+  #mainApp .archive-records .record,
+  #mainApp .archive-records .record.featured-record {
+    position: relative !important;
+    inset: auto !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 72px !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 17px 34px 16px 16px !important;
+    transform: none !important;
+    scale: 1 !important;
+    animation: none !important;
+    opacity: 1 !important;
+    overflow: hidden;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  #mainApp .archive-records .record .record-no {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 9px !important;
+    line-height: 1.35;
+  }
+
+  #mainApp .archive-records .record .record-name {
+    display: block;
+    font-size: 13px !important;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  #mainApp .archive-records .record.featured-record {
+    min-height: 88px !important;
+    border-color: rgba(255,190,135,.48) !important;
+    background: linear-gradient(135deg, rgba(75,47,38,.68), rgba(22,31,43,.72)) !important;
+    box-shadow: inset 0 0 25px rgba(255,155,91,.09), 0 4px 22px rgba(0,0,0,.28) !important;
+  }
+
+  #mainApp .archive-records .record.featured-record .record-name {
+    font-size: 15px !important;
+  }
+
+  #mainApp .archive-records .record:hover,
+  #mainApp .archive-records .record:focus-visible,
+  #mainApp .archive-records .record.featured-record:hover,
+  #mainApp .archive-records .record.featured-record:focus-visible {
+    scale: 1 !important;
+    background: linear-gradient(135deg, rgba(65,46,43,.62), rgba(22,31,44,.72)) !important;
+    box-shadow: inset 0 0 24px rgba(255,153,87,.10), 0 4px 22px rgba(0,0,0,.28) !important;
+  }
+
+  #mainApp .archive-instructions {
+    position: relative !important;
+    inset: auto !important;
+    order: 2;
+    transform: none !important;
+    width: 100%;
+    max-width: none !important;
+    margin: 8px auto 0;
+    padding: 0 8px;
+    white-space: normal !important;
+    text-align: center;
+    font-size: 9px !important;
+    line-height: 1.6;
+  }
+
+  #mainApp .archive-controls {
+    position: relative !important;
+    inset: auto !important;
+    width: 100%;
+    max-width: none;
+    margin: 12px auto 20px;
+    padding: 0;
+    opacity: 1;
+    pointer-events: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  #mainApp .archive-search {
+    width: 100%;
+    max-width: none;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  #mainApp .archive-search .search {
+    flex: 1 1 100%;
+    min-height: 40px;
+  }
+
+  #mainApp .archive-search .select {
+    width: 100%;
+    max-width: none !important;
+    min-height: 40px;
+  }
+
+  #mainApp footer {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: 100%;
+    margin: 18px auto 0 !important;
+    padding: 0 8px !important;
+    text-align: center !important;
+    font-size: 10px !important;
+  }
+
+  #mainApp .reader {
+    padding: 12px !important;
+    align-items: flex-end !important;
+  }
+
+  #mainApp .reader-box {
+    width: 100% !important;
+    max-height: 88dvh !important;
+    padding: 38px 18px 24px !important;
+  }
+}
