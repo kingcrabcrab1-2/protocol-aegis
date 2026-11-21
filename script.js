@@ -3,6 +3,9 @@ let adminPassword = "";
 let currentRecord = null;
 let soundOn = true;
 let allRecords = [];
+let typeToken = 0;
+let editing = false;
+let saving = false;
 
 
 
@@ -140,10 +143,14 @@ async function typeLines(
 }
 async function typeMessage(target, text) {
 
+  const token = ++typeToken;
+
   target.textContent = "";
   target.classList.add("typing");
 
   for (const ch of String(text ?? "")) {
+
+    if (token !== typeToken) return;
 
     target.textContent += ch;
 
@@ -160,7 +167,7 @@ async function typeMessage(target, text) {
 
   }
 
-  target.classList.remove("typing");
+  if (token === typeToken) target.classList.remove("typing");
 
 }
 
@@ -329,6 +336,7 @@ async function openReader(record) {
 
   if (!record) return;
 
+  exitEditMode();
   currentRecord = record;
 
   $("reader").classList.remove("hidden");
@@ -382,6 +390,7 @@ $("readerClose").addEventListener(
   "click",
   () => {
 
+    exitEditMode();
     $("reader").classList.add("hidden");
 
   }
@@ -393,6 +402,7 @@ $("adminToggle").addEventListener(
 
     if (adminMode) {
 
+      exitEditMode();
       adminMode = false;
       adminPassword = "";
 
@@ -531,43 +541,127 @@ $("sendButton").addEventListener(
 
   }
 );
-$("editButton").addEventListener(
-  "click",
-  async () => {
+// ---------- 인라인 메시지 수정 ----------
+function exitEditMode() {
 
-    if (!currentRecord) return;
+  editing = false;
+  saving = false;
 
-    const message = prompt(
-      "수정할 메시지를 입력하세요.",
-      currentRecord.message
-    );
+  $("editMessage").classList.add("hidden");
+  $("editTools").classList.add("hidden");
+  $("editStatus").textContent = "";
+  $("viewMessage").classList.remove("hidden");
+  $("adminTools").classList.toggle("hidden", !adminMode || !currentRecord);
 
-    if (message === null) return;
+}
 
-    try {
+function enterEditMode() {
 
-      await api(
-        `/api/messages/${currentRecord.id}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            message
-          })
-        }
-      );
+  if (!currentRecord || !adminMode || editing) return;
 
-      $("reader").classList.add("hidden");
+  // 타이핑 연출 중이면 즉시 전체 본문으로 확정
+  typeToken++;
 
-      await loadRecords();
+  const view = $("viewMessage");
+  view.classList.remove("typing");
+  view.textContent = currentRecord.message;
 
-    } catch (e) {
+  // 본문 영역과 같은 높이로 고정 → 창 크기/위치 변화 없음
+  const area = $("editMessage");
+  const height = view.offsetHeight;
 
-      alert(e.message);
+  area.value = currentRecord.message;
+  area.style.height = `${height}px`;
 
-    }
+  view.classList.add("hidden");
+  area.classList.remove("hidden");
+  $("adminTools").classList.add("hidden");
+  $("editTools").classList.remove("hidden");
+  $("editStatus").textContent = "";
+  $("saveEditButton").disabled = false;
+  $("cancelEditButton").disabled = false;
+
+  editing = true;
+
+  area.focus();
+  area.setSelectionRange(area.value.length, area.value.length);
+
+}
+
+async function saveEdit() {
+
+  if (!editing || saving || !currentRecord) return;
+
+  const area = $("editMessage");
+  const text = area.value.trim();
+  const original = String(currentRecord.message).replace(/\r\n/g, "\n").trim();
+
+  if (!text) {
+    $("editStatus").textContent = "메시지를 입력해 주세요.";
+    return;
+  }
+
+  // 변경이 없으면 서버 호출 없이 종료 (원본 줄바꿈 보존)
+  if (text === original) {
+    exitEditMode();
+    return;
+  }
+
+  saving = true;
+  $("saveEditButton").disabled = true;
+  $("cancelEditButton").disabled = true;
+  $("editStatus").textContent = "TRANSMITTING...";
+
+  try {
+
+    await api(`/api/messages/${currentRecord.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ message: text })
+    });
+
+    currentRecord.message = text;
+
+    const item = allRecords.find((r) => r.id === currentRecord.id);
+    if (item) item.message = text;
+
+    $("viewMessage").textContent = text;
+    exitEditMode();
+    renderRecords();
+
+  } catch (e) {
+
+    // 실패 시 입력 내용 유지
+    saving = false;
+    $("saveEditButton").disabled = false;
+    $("cancelEditButton").disabled = false;
+    $("editStatus").textContent = e.message || "저장에 실패했습니다.";
+    area.focus();
 
   }
-);
+
+}
+
+$("editButton").addEventListener("click", enterEditMode);
+$("saveEditButton").addEventListener("click", saveEdit);
+
+$("cancelEditButton").addEventListener("click", () => {
+
+  if (saving) return;
+  exitEditMode();
+
+});
+
+$("editMessage").addEventListener("keydown", (event) => {
+
+  if (event.key === "Escape") {
+    event.stopPropagation();
+    if (!saving) exitEditMode();
+  } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+    event.preventDefault();
+    saveEdit();
+  }
+
+});
 
 $("deleteButton").addEventListener(
   "click",
