@@ -742,3 +742,28 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
   #mainApp .reader-box .reader-mark {width:32px;height:42px}
   #mainApp .reader-box #viewTitle {font-size:clamp(21px,6vw,29px) !important}
 }
+
+/* Phase 2K hotfix: fixed-footprint relay status; opacity-only blink. */
+#mainApp .reader-box::after {
+  display:block !important;
+  visibility:visible !important;
+  position:relative !important;
+  box-sizing:border-box !important;
+  min-height:48px !important;
+  margin:30px 0 0 !important;
+  padding:16px 0 8px !important;
+  transform:none !important;
+  transition:none !important;
+  animation:nrsRelayStatusBlink 2.8s steps(1,end) infinite !important;
+  will-change:opacity;
+}
+@keyframes nrsRelayStatusBlink {
+  0%, 46%, 55%, 100% {opacity:1}
+  47%, 54% {opacity:.08}
+}
+@media (max-width:750px) {
+  #mainApp .reader-box::after {min-height:56px !important}
+}
+@media (prefers-reduced-motion:reduce) {
+  #mainApp .reader-box::after {animation:none !important;opacity:1 !important}
+}
