@@ -889,3 +889,9 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
 @media(prefers-reduced-motion:reduce) {
   #mainApp .reader::after {animation:none !important;opacity:1 !important}
 }
+
+/* Archive navigation hint: slightly larger text only. */
+#mainApp .archive-instructions { font-size:13px !important; }
+@media (max-width:750px) {
+  #mainApp .archive-instructions { font-size:11px !important; }
+}
