@@ -43,3 +43,26 @@
 @keyframes nrsStamp{12%{opacity:.85;transform:rotate(-4deg) scale(1)}75%{opacity:.7}100%{opacity:0}}
 @media(max-width:750px){#mainApp .nrs-telemetry{left:9px;bottom:24px;width:170px;padding:7px 8px;font-size:7px;opacity:.75}#mainApp .nrs-telemetry-title{font-size:8px}#mainApp .nrs-telemetry-status{font-size:9px}#mainApp .nrs-telemetry-lines,#mainApp .nrs-observatory-iris{display:none}#mainApp .reader-box .nrs-verified-stamp{top:54px;right:15px;font-size:7px;max-width:150px}}
 @media(prefers-reduced-motion:reduce){#mainApp .nrs-observatory-iris,#mainApp .nrs-live-dot{animation:none!important}#mainApp .nrs-sync-pulse,#mainApp .nrs-interference,#mainApp .nrs-data-relay-line,#mainApp .nrs-data-particle{display:none!important}}
+
+/* Phase 4 — layered observatory interactions; presentation only. */
+#mainApp .nrs-depth-field{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;transform:translate3d(var(--nrs-parallax-x,0px),var(--nrs-parallax-y,0px),0);transition:transform .22s ease-out}
+#mainApp .nrs-packet{position:absolute;width:var(--packet-w,8px);height:2px;background:linear-gradient(90deg,transparent,#ffad70);opacity:.42;box-shadow:0 0 7px rgba(255,132,66,.4);animation:nrsPacketDrift var(--packet-time,18s) linear infinite;animation-delay:var(--packet-delay,0s)}
+@keyframes nrsPacketDrift{0%{transform:translate3d(0,0,0);opacity:0}15%{opacity:.42}85%{opacity:.42}100%{transform:translate3d(var(--packet-dx,80px),var(--packet-dy,-90px),0);opacity:0}}
+#mainApp .archive-records .record .nrs-glass-sheen{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;background:linear-gradient(115deg,transparent 24%,rgba(255,215,164,.0) 39%,rgba(255,216,167,.19) 49%,transparent 61%);transform:translateX(-110%);transition:opacity .18s}
+#mainApp .archive-records .record:hover .nrs-glass-sheen,#mainApp .archive-records .record:focus-visible .nrs-glass-sheen{opacity:1;animation:nrsSheen 1.05s ease-out both}
+@keyframes nrsSheen{to{transform:translateX(110%)}}
+#mainApp .nrs-decrypt-ring{position:absolute;right:30px;top:26px;width:28px;height:28px;border:2px solid rgba(255,159,91,.2);border-top-color:#ffc28c;border-right-color:#ff9c57;border-radius:50%;pointer-events:none;opacity:0}
+#mainApp .reader-box.nrs-decrypting .nrs-decrypt-ring{opacity:1;animation:nrsDecryptSpin 1.1s linear infinite}
+@keyframes nrsDecryptSpin{to{transform:rotate(360deg)}}
+#mainApp .reader-box.nrs-materializing{animation:nrsMaterialize .42s ease-out both}
+@keyframes nrsMaterialize{from{opacity:.45;filter:brightness(1.55);clip-path:inset(48% 0 48% 0)}to{opacity:1;filter:brightness(1);clip-path:inset(0 0 0 0)}}
+#mainApp .nrs-triangulation{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;overflow:visible}
+#mainApp .nrs-triangulation line{stroke:#ffa76e;stroke-width:1;stroke-dasharray:5 7;opacity:.65;filter:drop-shadow(0 0 5px #ff9c55);animation:nrsTriangle .95s ease-out both}
+@keyframes nrsTriangle{0%{opacity:0;stroke-dashoffset:70}35%{opacity:.65}100%{opacity:0;stroke-dashoffset:0}}
+#mainApp .nrs-sector-jump{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:0;background:repeating-linear-gradient(90deg,transparent 0 9%,rgba(255,149,76,.10) 9.15%,transparent 9.4%),radial-gradient(ellipse at center,rgba(255,167,90,.12),transparent 70%)}
+#mainApp .nrs-sector-jump.active{animation:nrsJump .65s ease-out both}
+@keyframes nrsJump{0%{opacity:0;transform:scaleX(1.15)}30%{opacity:.8;transform:scaleX(.92)}100%{opacity:0;transform:scaleX(1)}}
+#mainApp .nrs-recalibration{position:absolute;right:20px;top:65px;z-index:6;pointer-events:none;font:9px ui-monospace,Consolas,monospace;letter-spacing:.12em;color:#ffbb8b;text-shadow:0 0 9px #ff8a43;opacity:0;transition:opacity .25s}
+#mainApp .nrs-recalibration.active{opacity:.8}
+@media(max-width:750px){#mainApp .nrs-depth-field,#mainApp .nrs-triangulation,#mainApp .nrs-recalibration{display:none!important}#mainApp .nrs-decrypt-ring{right:17px;top:16px;width:20px;height:20px}}
+@media(prefers-reduced-motion:reduce){#mainApp .nrs-packet,#mainApp .nrs-glass-sheen,#mainApp .nrs-decrypt-ring,#mainApp .nrs-triangulation line,#mainApp .nrs-sector-jump,#mainApp .reader-box.nrs-materializing{animation:none!important}#mainApp .nrs-depth-field{transform:none!important}}
