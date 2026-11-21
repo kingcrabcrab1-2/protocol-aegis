@@ -260,8 +260,7 @@ let archiveLayoutWidth = window.innerWidth;
 function archiveIsMobile() { return window.matchMedia("(max-width: 750px)").matches; }
 
 function archivePageSize() {
-  if (archiveIsMobile()) return Infinity; // Preserve existing mobile vertical list.
-  return 20; // Display up to 20 records per desktop sector.
+  return 40; // Show at most 40 records per page on desktop and mobile.
 }
 
 function updateArchivePager(total, pageSize) {
