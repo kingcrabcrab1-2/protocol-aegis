@@ -114,7 +114,7 @@ const lines=[
 'ARCHIVE INTEGRITY : 99.8%','TIMELINE CONVERGENCE DETECTED',
 'ACCESS PERMISSION : GRANTED','NRS / ARCHIVE CONNECTION ESTABLISHED'];
 function appendLine(i){if(dead)return;const n=el('div','nrs-line',log,lines[i%lines.length]);if(i%7===0)n.classList.add('nrs-line-bright');if(i%11===0)n.classList.add('nrs-line-fault');while(log.children.length>32)log.firstChild.remove();log.scrollTop=log.scrollHeight;}
-function audioStart(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audio=new AC();master=audio.createGain();master.gain.value=.12;const lp=audio.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;master.connect(lp);lp.connect(audio.destination);
+function audioStart(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audio=new AC();master=audio.createGain();master.gain.value=.15;const lp=audio.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;master.connect(lp);lp.connect(audio.destination);
  const t=audio.currentTime+.05;
  const tone=(freq,delay,dur,gain,detune=0)=>{const osc=audio.createOscillator(),env=audio.createGain();osc.type='sine';osc.frequency.setValueAtTime(freq,t+delay);osc.detune.value=detune;env.gain.setValueAtTime(.0001,t+delay);env.gain.linearRampToValueAtTime(gain,t+delay+Math.min(1.6,dur*.35));env.gain.exponentialRampToValueAtTime(.0001,t+delay+dur);osc.connect(env);env.connect(master);osc.start(t+delay);osc.stop(t+delay+dur+.1);};
  tone(110,0,2.7,.23);tone(164.81,.15,2.6,.13);tone(220,.5,2.2,.11,3);tone(329.63,1.0,1.8,.06,-4);tone(440,1.7,1.1,.045);

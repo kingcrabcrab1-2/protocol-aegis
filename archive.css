@@ -139,3 +139,67 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
 #mainApp .archive-records .record.featured-record:focus-visible {
   scale: 1.03 !important;
 }
+
+
+/* Phase 2H: legible orange angular signal frames, subtle rotation and outer priority orbit. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {
+  /* Solid angular outer contour; the inner translucent pane keeps the video visible. */
+  --nrs-shape: polygon(0 22%, 8% 22%, 16% 0, 65% 0, 72% 17%, 90% 17%, 100% 35%, 100% 79%, 92% 100%, 55% 100%, 49% 86%, 20% 86%, 14% 100%, 0 100%);
+  clip-path:var(--nrs-shape) !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:linear-gradient(135deg,#ff672c 0%,#ff9a58 38%,#ed501b 100%) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  padding:23px 19px 21px !important;
+  min-height:104px !important;
+  overflow:hidden;
+  filter:none !important;
+  opacity:1 !important;
+  text-shadow:none !important;
+  isolation:isolate;
+}
+#mainApp .archive-records .record::before,
+#mainApp .archive-records .record.featured-record::before {
+  content:"" !important;
+  position:absolute !important;
+  inset:2.5px !important;
+  left:2.5px !important;
+  top:2.5px !important;
+  width:auto !important;
+  height:auto !important;
+  background:linear-gradient(135deg,rgba(10,12,20,.92),rgba(16,19,30,.88)) !important;
+  clip-path:var(--nrs-shape);
+  z-index:0;
+  pointer-events:none;
+  transition:none !important;
+}
+#mainApp .archive-records .record::after,
+#mainApp .archive-records .record.featured-record::after {content:none !important}
+#mainApp .archive-records .record .record-no,
+#mainApp .archive-records .record .record-name {
+  position:relative;
+  z-index:1;
+  opacity:1 !important;
+  filter:none !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.95) !important;
+}
+#mainApp .archive-records .record .record-no {color:#ffb16f !important;font-size:10px !important;font-weight:800;letter-spacing:.10em}
+#mainApp .archive-records .record .record-name {color:#fff0dc !important;font-size:clamp(13px,1.12vw,17px) !important;font-weight:800;line-height:1.5}
+#mainApp .archive-records .record.featured-record {min-height:118px !important;padding:28px 22px 23px !important}
+#mainApp .archive-records .record.featured-record .record-name {font-size:clamp(15px,1.3vw,19px) !important}
+#mainApp .archive-records .record:hover,
+#mainApp .archive-records .record:focus-visible,
+#mainApp .archive-records .record.featured-record:hover,
+#mainApp .archive-records .record.featured-record:focus-visible {scale:1.03 !important;filter:drop-shadow(0 0 7px rgba(255,120,40,.4)) !important}
+/* Disable brightness pulsing that made text appear to fade in and out. */
+#mainApp .archive-records .record,
+#mainApp .archive-records .record.featured-record {animation:nrsFloatClear 7s ease-in-out infinite alternate !important}
+@keyframes nrsFloatClear {from{margin-top:-3px}to{margin-top:3px}}
+@media(max-width:750px){
+ #mainApp .archive-records .record{min-height:79px !important;padding:19px 10px 14px !important}
+ #mainApp .archive-records .record.featured-record{min-height:92px !important;padding:22px 11px 15px !important}
+ #mainApp .archive-records .record .record-name{font-size:11px !important}
+}
+@media(prefers-reduced-motion:reduce){#mainApp .archive-records .record,#mainApp .archive-records .record.featured-record{animation:none !important}}

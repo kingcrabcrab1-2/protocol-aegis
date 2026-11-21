@@ -330,7 +330,8 @@ function renderRecords() {
   const stageWidth = stage.clientWidth;
   const stageHeight = stage.clientHeight;
   const regular = [...$("records").querySelectorAll(".record")];
-  regular.forEach((node, i) => {
+  const ordinary = regular.filter(node => !node.classList.contains("featured-record"));
+  ordinary.forEach((node, i) => {
     const a = i * 2.399963229728653 + .45;
     const layer = i % 4;
     // A circular safe radius ensures cards stay visible even while the scene rotates.
@@ -342,7 +343,15 @@ function renderRecords() {
     node.style.setProperty("--pos-y", `${Math.sin(a) * ry}px`);
     node.style.setProperty("--card-scale", `${[.88, 1, .93, 1.06][layer]}`);
   });
-  // Priority archive stays in the same rotating world, with a larger glass card.
+  // Place priority on the opposite, outer orbit; it still rotates with archiveWorld.
+  regular.filter(node => node.classList.contains("featured-record")).forEach((node, i) => {
+    const safeRadius = Math.max(140, Math.min(stageWidth * .35, stageHeight * .5 - 112));
+    const a = Math.PI + .20 + i * .18;
+    const radius = safeRadius * 1.12;
+    node.style.setProperty("--pos-x", `${Math.cos(a) * radius}px`);
+    node.style.setProperty("--pos-y", `${Math.sin(a) * radius}px`);
+    node.style.setProperty("--card-scale", ".99");
+  });
 
   document
     .querySelectorAll(".record")
@@ -974,7 +983,7 @@ $("restoreFile").addEventListener("change", async (event) => {
     if (!$("reader").classList.contains("hidden") || !dock.classList.contains("hidden")) {
       velocity *= .7;
     } else {
-      target += velocity + (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : .006);
+      target += velocity + (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : .022);
       velocity *= .91;
     }
     angle += (target - angle) * .085;
