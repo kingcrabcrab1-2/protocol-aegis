@@ -1,8 +1,6 @@
 /* NRS visual effects layer — intentionally isolated from archive layout */
 #mainApp .archive-stage{--nrs-distort-x:50%;--nrs-distort-y:50%}
 #nrsEffectsCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:.75}
-#nrsSignalWave{position:fixed;right:26px;bottom:45px;width:156px;height:32px;z-index:9;pointer-events:none;opacity:.62;filter:drop-shadow(0 0 6px rgba(255,140,72,.4))}
-#nrsSignalWave path{fill:none;stroke:#ffa56c;stroke-width:1.3;vector-effect:non-scaling-stroke}
 #mainApp .archive-stage::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 26% 29% at var(--nrs-distort-x) var(--nrs-distort-y),rgba(255,146,80,.065),transparent 73%);mix-blend-mode:screen;animation:nrsDistortBreath 9s ease-in-out infinite}
 @keyframes nrsDistortBreath{50%{opacity:.4;filter:blur(8px)}}
 #mainApp .archive-records .record{--nrs-target-opacity:0}
@@ -12,5 +10,36 @@
 @keyframes nrsDetectFlash{0%,100%{filter:brightness(1)}35%{filter:brightness(1.55) drop-shadow(0 0 9px rgba(255,149,70,.65))}}
 #mainApp .reader-box.nrs-decrypting{box-shadow:0 0 32px rgba(255,152,80,.28),inset 0 0 24px rgba(255,152,80,.09)!important}
 #mainApp .reader-box.nrs-decrypting #decrypt{letter-spacing:.045em;text-shadow:0 0 12px rgba(255,169,98,.45)}
-@media(max-width:750px){#nrsEffectsCanvas,#nrsSignalWave{display:none!important}#mainApp .archive-stage::before{display:none!important}#mainApp .archive-records .record .nrs-target{display:none!important}}
-@media(prefers-reduced-motion:reduce){#nrsEffectsCanvas,#nrsSignalWave{display:none!important}#mainApp .archive-stage::before{animation:none!important}#mainApp .archive-records .record.nrs-detected{animation:none!important}}
+@media(max-width:750px){#nrsEffectsCanvas{display:none!important}#mainApp .archive-stage::before{display:none!important}#mainApp .archive-records .record .nrs-target{display:none!important}}
+@media(prefers-reduced-motion:reduce){#nrsEffectsCanvas{display:none!important}#mainApp .archive-stage::before{animation:none!important}#mainApp .archive-records .record.nrs-detected{animation:none!important}}
+
+/* Phase 3 — observational HUD additions, without changing archive controls. */
+#mainApp .nrs-observation-overlay{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+#mainApp .nrs-observatory-iris{position:absolute;left:50%;top:50%;width:590px;height:590px;translate:-50% -50%;border:1px solid rgba(255,153,84,.10);border-radius:50%;pointer-events:none;z-index:1;opacity:.48;background:repeating-conic-gradient(from 8deg,rgba(255,154,83,.13) 0deg 1deg,transparent 1deg 44deg,rgba(255,154,83,.09) 44deg 45deg,transparent 45deg 90deg);mask-image:radial-gradient(circle,transparent 0 49%,black 50% 51%,transparent 52%);animation:nrsIrisTurn 110s linear infinite}
+@keyframes nrsIrisTurn{to{rotate:360deg}}
+#mainApp .nrs-telemetry{position:absolute;left:24px;bottom:32px;z-index:5;width:240px;padding:11px 13px;background:linear-gradient(120deg,rgba(6,13,22,.78),rgba(9,19,30,.50));border-left:2px solid rgba(255,165,99,.65);border-top:1px solid rgba(255,160,98,.18);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.06em;color:#d5a17b;font-size:9px;pointer-events:none;text-shadow:0 1px 6px #03070d}
+#mainApp .nrs-telemetry-title{display:flex;justify-content:space-between;align-items:center;font-weight:700;color:#ffc093;font-size:10px;margin-bottom:8px}
+#mainApp .nrs-live-dot{color:#9fe2ac;animation:nrsStatusBlink 3s ease-in-out infinite}
+#mainApp .nrs-telemetry-status{color:#a6e1b8;font-size:11px;font-weight:700;margin-bottom:9px}
+#mainApp .nrs-telemetry-status span{display:block;color:#c4a78f;font-size:8px;font-weight:400;margin-top:3px}
+#mainApp .nrs-telemetry-lines>div{display:flex;justify-content:space-between;gap:12px;line-height:1.8;border-top:1px solid rgba(255,178,114,.1)}
+#mainApp .nrs-telemetry-lines b{font-weight:600;color:#f1b17e}
+#mainApp .nrs-telemetry-last{font-size:8px;margin-top:7px;color:#e5a36d;opacity:.8}
+#mainApp .nrs-log-update{animation:nrsLogFade .7s ease-out}
+@keyframes nrsLogFade{from{opacity:.2;translate:0 4px}to{opacity:.8;translate:0 0}}
+@keyframes nrsStatusBlink{50%{opacity:.38}}
+#mainApp .nrs-sync-pulse{position:absolute;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;border:1px solid rgba(255,171,106,.75);border-radius:50%;box-shadow:0 0 16px rgba(255,138,67,.3);animation:nrsSyncPulse 2.5s ease-out forwards}
+@keyframes nrsSyncPulse{to{scale:11;opacity:0}}
+#mainApp .nrs-interference{position:absolute;left:0;right:0;top:25%;height:2px;background:linear-gradient(90deg,transparent,rgba(255,164,100,.22),transparent);box-shadow:0 0 12px rgba(255,155,81,.15);animation:nrsInterference .7s linear forwards}
+@keyframes nrsInterference{to{translate:0 240px;opacity:0}}
+#mainApp .nrs-data-relay-line{position:absolute;height:1px;transform-origin:0 50%;background:linear-gradient(90deg,rgba(255,183,116,.92),rgba(255,151,74,.45),transparent);box-shadow:0 0 9px rgba(255,158,85,.7);animation:nrsRelay .9s ease-out forwards}
+@keyframes nrsRelay{0%{opacity:0;clip-path:inset(0 100% 0 0)}25%{opacity:1;clip-path:inset(0 0 0 0)}100%{opacity:0;clip-path:inset(0 0 0 0)}}
+#mainApp .nrs-data-particle{position:absolute;width:3px;height:3px;border-radius:50%;background:#ffbd8b;box-shadow:0 0 7px #ff8e45;animation:nrsParticle .85s ease-in forwards}
+@keyframes nrsParticle{0%{opacity:0;translate:var(--dx) var(--dy)}30%{opacity:.9}100%{opacity:0;translate:0 0;scale:.2}}
+#mainApp .archive-records .record .nrs-orbit-coordinates{position:absolute;right:9px;bottom:3px;opacity:0;pointer-events:none;color:#ffbc8a;font:8px ui-monospace,monospace;letter-spacing:.04em;transition:opacity .2s;text-shadow:0 0 7px #ff8b4c}
+#mainApp .archive-records .record:hover .nrs-orbit-coordinates,#mainApp .archive-records .record:focus-visible .nrs-orbit-coordinates{opacity:.85}
+#mainApp .reader-box .nrs-verified-stamp{position:absolute;right:48px;top:70px;pointer-events:none;color:#ffb781;border:1px solid rgba(255,174,104,.6);padding:6px 9px;font:700 9px ui-monospace,monospace;letter-spacing:.1em;opacity:0;transform:rotate(-4deg) scale(.9);text-shadow:0 0 8px rgba(255,151,77,.5)}
+#mainApp .reader-box .nrs-verified-stamp.nrs-stamp-show{animation:nrsStamp 1.5s ease-out forwards}
+@keyframes nrsStamp{12%{opacity:.85;transform:rotate(-4deg) scale(1)}75%{opacity:.7}100%{opacity:0}}
+@media(max-width:750px){#mainApp .nrs-telemetry{left:9px;bottom:24px;width:170px;padding:7px 8px;font-size:7px;opacity:.75}#mainApp .nrs-telemetry-title{font-size:8px}#mainApp .nrs-telemetry-status{font-size:9px}#mainApp .nrs-telemetry-lines,#mainApp .nrs-observatory-iris{display:none}#mainApp .reader-box .nrs-verified-stamp{top:54px;right:15px;font-size:7px;max-width:150px}}
+@media(prefers-reduced-motion:reduce){#mainApp .nrs-observatory-iris,#mainApp .nrs-live-dot{animation:none!important}#mainApp .nrs-sync-pulse,#mainApp .nrs-interference,#mainApp .nrs-data-relay-line,#mainApp .nrs-data-particle{display:none!important}}
