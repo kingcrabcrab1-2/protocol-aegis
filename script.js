@@ -18,6 +18,16 @@ const wait = (ms) =>
 const timelineNo = (id) =>
   String(id).padStart(6, "0");
 
+// Display team labels in Korean without changing stored records or the API.
+function displayTeamName(record) {
+  const original = String(record?.team_name ?? "");
+  // Preserve the author and any other text following the team label.
+  if (/^NRS\s*\/?\s*\d+\s*팀/i.test(original)) {
+    return original.replace(/^NRS\s*\/?\s*(?=\d+\s*팀)/i, "네르사 ");
+  }
+  return original;
+}
+
 function escapeHTML(value) {
 
   return String(value ?? "").replace(
@@ -306,7 +316,7 @@ function renderRecords() {
   let filtered =
     allRecords.filter((item) =>
 
-      `${item.team_name || ""} ${item.message || ""} ${timelineNo(item.id)}`
+      `${displayTeamName(item)} ${item.team_name || ""} ${item.message || ""} ${timelineNo(item.id)}`
         .toLowerCase()
         .includes(keyword)
 
@@ -364,7 +374,7 @@ function renderRecords() {
         </div>
 
         <div class="record-name">
-          ${escapeHTML(item.team_name)}
+          ${escapeHTML(displayTeamName(item))}
         </div>
 
       </article>
@@ -443,7 +453,7 @@ async function openReader(record) {
   currentRecord = record;
 
   // Populate the selected record's identity BEFORE revealing the reader.
-  const identity = record.team_name || "NRS / INTER-TIMELINE MESSAGE";
+  const identity = displayTeamName(record) || "NRS / INTER-TIMELINE MESSAGE";
   $("readerIdentity").textContent = identity;
   $("viewTitle").textContent = identity;
   $("viewMeta").textContent = `RECEIVED / TIME LINE #${timelineNo(record.id)}`;
