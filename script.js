@@ -260,12 +260,8 @@ let archiveLayoutWidth = window.innerWidth;
 function archiveIsMobile() { return window.matchMedia("(max-width: 750px)").matches; }
 
 function archivePageSize() {
-  if (archiveIsMobile()) return Infinity; // Existing mobile vertical list stays intact.
-  const stage = document.querySelector(".archive-stage");
-  const w = stage?.clientWidth || window.innerWidth;
-  const h = stage?.clientHeight || window.innerHeight;
-  // Keep the radar and the existing card dimensions unobstructed.
-  return w < 950 || h < 740 ? 8 : w < 1350 ? 10 : 12;
+  if (archiveIsMobile()) return Infinity; // Preserve existing mobile vertical list.
+  return 20; // Display up to 20 records per desktop sector.
 }
 
 function updateArchivePager(total, pageSize) {
@@ -384,9 +380,9 @@ function renderRecords() {
     const nodes = [...$("records").querySelectorAll(".record")];
     const center = Math.min(w * .5, h * .5);
     const outerRadius = Math.max(215, Math.min(w * .43, h * .46));
-    const innerRadius = Math.max(170, outerRadius * .72);
+    const innerRadius = Math.max(170, outerRadius * .66);
     const count = nodes.length;
-    const innerCount = Math.min(Math.floor(count * .42), 4);
+    const innerCount = Math.min(Math.round(count * .4), 8);
     const outerCount = count - innerCount;
     const placements = [];
     // Keep a central gap for the original NRS radar/title.
@@ -394,7 +390,7 @@ function renderRecords() {
       const isInner = i < innerCount;
       const n = isInner ? innerCount : outerCount;
       const k = isInner ? i : i - innerCount;
-      const angle = (2 * Math.PI * k / Math.max(n, 1)) + (isInner ? -.45 : .17);
+      const angle = (2 * Math.PI * k / Math.max(n, 1)) + (isInner ? -.34 : .17);
       const radius = isInner ? innerRadius : outerRadius;
       const yLift = Math.min(36, h * .04);
       const x = Math.cos(angle) * radius;
