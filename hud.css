@@ -49,3 +49,25 @@
 .ai-auth canvas{pointer-events:none}
 .ai-auth h2,.ai-auth p,.ai-auth button{position:relative;z-index:1}
 .ai-enter{position:relative;z-index:2;pointer-events:auto}
+
+/* Phase 2A: high contrast amber CRT gate / readable rounded pixel typography */
+@font-face{font-family:"DungGeunMo";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/DungGeunMo.woff") format("woff");font-display:swap}
+.aegis-intro{font-family:"DungGeunMo", "Noto Sans KR",monospace}
+.ai-gate{background:radial-gradient(ellipse at 50% 42%,#241006 0%,#0b0502 58%,#030201 100%);color:#ffbf83;gap:20px;isolation:isolate}
+.ai-gate::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.14;background:repeating-linear-gradient(to bottom,transparent 0 3px,#d66a23 4px,transparent 5px);z-index:-1}
+.ai-gate-kicker{color:#ff9d54;font-size:clamp(12px,1.45vw,18px);letter-spacing:.08em;line-height:1.7}
+.ai-gate h2{color:#ffb16b;font-size:clamp(34px,6vw,76px);font-weight:400;text-shadow:0 0 26px rgba(255,106,29,.28);letter-spacing:.04em}
+.ai-gate p{color:#ffe0c0;max-width:780px;font-size:clamp(16px,2vw,23px);line-height:1.75;letter-spacing:.02em;text-wrap:balance}
+.ai-gate-button{background:#a84b1d;color:#fff3e6;border:2px solid #ff9c54;font-size:clamp(20px,2.4vw,28px);font-weight:400;padding:17px 44px;box-shadow:0 0 0 1px #361408,0 0 30px rgba(255,109,31,.22)}
+.ai-gate-button:hover,.ai-gate-button:focus-visible{background:#d5662a;outline:3px solid #ffc58d;outline-offset:4px}
+.ai-gate-muted{color:#e4a77c;font-size:clamp(14px,1.5vw,18px)}
+.ai-gate-muted:hover,.ai-gate-muted:focus-visible{color:#ffe1b9}
+.ai-cascade{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden;opacity:0;transition:opacity .15s}
+.ai-cascade.on{opacity:1}
+.ai-cascade span{position:absolute;white-space:nowrap;color:#ff9b4e;font-size:clamp(10px,1.1vw,15px);letter-spacing:.05em;text-shadow:0 0 8px rgba(255,102,28,.55);animation:aiLogBurst 1.2s ease-out both}
+@keyframes aiLogBurst{0%{opacity:0;transform:translateY(14px) scale(.98)}18%{opacity:.8}65%{opacity:.65}100%{opacity:0;transform:translateY(-28px) scale(1.02)}}
+.ai-auth{z-index:3;background:rgba(5,2,0,.88)}
+.ai-auth h2{font-size:clamp(24px,5vw,52px)}
+.ai-skip{z-index:6}
+@media(max-width:700px){.ai-gate{padding:26px}.ai-gate p{max-width:34ch}.ai-cascade span{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.ai-cascade span{animation:none}}

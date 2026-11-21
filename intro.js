@@ -31,6 +31,25 @@ function build() {
   shapes.wormhole = fill(() => { const a=rnd()*PI2, t=rnd()*2-1, r=.26+.9*Math.abs(t)**1.4; return [r*Math.cos(a),t*1.2,r*Math.sin(a),.45+rnd()*.55]; });
   shapes.resonance = fill(() => { const a=rnd()*PI2, r=Math.sqrt(rnd())*1.18; return [r*Math.cos(a),r*Math.sin(a),.3*Math.sin(r*17+a*3),.45+rnd()*.55]; });
   shapes.brane = fill(() => { const a=rnd()*PI2, b=rnd()*PI2, R=.72, r=.32; return [(R+r*Math.cos(b))*Math.cos(a), (R+r*Math.cos(b))*Math.sin(a),r*Math.sin(b)+.22*Math.sin(3*a),.45+rnd()*.55]; });
+  // Continuous, densely sampled orbital strands instead of scattered ASCII glyphs.
+  shapes.wire = fill((i) => {
+    const strand = i % 110, t = Math.floor(i / 110) / Math.ceil(N / 110) * PI2;
+    const a = strand / 110 * PI2, major = .74, minor = .34;
+    const ripple = .07 * Math.sin(5*a + 3*t);
+    return [(major + (minor+ripple)*Math.cos(t))*Math.cos(a),
+            (major + (minor+ripple)*Math.cos(t))*Math.sin(a),
+            (minor+ripple)*Math.sin(t), .86 + rnd()*.14];
+  });
+  shapes.brain = fill(() => {
+    const d=dir(), fold=.075*Math.sin(13*d[0]+8*d[2])*Math.cos(17*d[1]-5*d[0]);
+    return [d[0]*(.85+fold), d[1]*(.72+fold), d[2]*(.72+fold), .75+rnd()*.25];
+  });
+  shapes.head = fill(() => {
+    const d=dir(), y=d[1], face=d[2]>.1;
+    const jaw = y<-.2 ? .82+.28*y : 1;
+    const nose = face && Math.abs(d[0])<.12 && y>-.12 && y<.3 ? .19 : 0;
+    return [d[0]*.66*jaw, y*.99, d[2]*.70*jaw+nose, .75+rnd()*.25];
+  });
 }
 
 /* ---------- 상태 ---------- */
@@ -43,11 +62,12 @@ cv = el("canvas", "", root);
 const phase = el("div", "ai-phase", root), log = el("pre", "ai-log", root), cur = el("i");
 const hl = el("div", "ai-hud ai-hl", root), hr = el("div", "ai-hud ai-hr", root), lab = el("div", "ai-hud ai-label", root);
 const auth = el("div", "ai-auth", root), rad = el("canvas", "", auth); rad.style.cssText = "position:absolute;inset:0;opacity:.9;pointer-events:none";
-const t1 = el("h2", "", auth, "PROTOCOL : AEGIS"), t2 = el("p", "", auth, "ARCHIVED INTER-TIMELINE RELAY TERMINAL"), t3 = el("p", "", auth), enter = el("button", "ai-enter", auth, "ENTER ARCHIVE");
-const skip = el("button", "ai-skip", root, "SKIP ▸▸"); skip.type = "button"; enter.type = "button";
+const t1 = el("h2", "", auth, "NRS / 아카이브 연결"), t2 = el("p", "", auth, "타임라인 간 연결 승인"), t3 = el("p", "", auth);
+const skip = el("button", "ai-skip", root, "SKIP ▸▸"); skip.type = "button";
 el("div", "ai-sign", root, "written by. hamge");
+const cascade = el("div", "ai-cascade", root); cascade.setAttribute("aria-hidden", "true");
 const gate = el("div", "ai-gate", root);
-el("div", "ai-gate-kicker", gate, "N.R.S / 타임라인 간 시스템 연결 시도중 ···");
+el("div", "ai-gate-kicker", gate, "NRS / 타임라인 간 시스템 연결 시도 중 ···");
 el("h2", "", gate, "존재 접근 확인");
 el("p", "", gate, "존재성을 헌납하였기 때문에 감각 이상 현상이 일어날 수 있습니다. 앞으로 나아가시겠습니까?");
 const startSound = el("button", "ai-gate-button", gate, "앞으로 나아간다.");
@@ -122,19 +142,19 @@ function begin(withSound) {
   run().catch(() => finish(true));
 }
 startSound.addEventListener("click",()=>begin(true));
-startSilent.addEventListener("click",()=>begin(false));
+startSilent.addEventListener("click",()=>finish(true));
 
 /* ---------- WebGL ---------- */
 const VS = `attribute vec4 aA;attribute vec4 aB;attribute vec4 aR;uniform float uMix,uTime,uAspect,uScale,uSize,uDamage,uCollapse,uYaw,uPitch,uDpr;varying float vA,vT,vG,vC;
 void main(){float dl=aR.x*.45;float t=clamp((uMix-dl)/.55,0.,1.);t=t*t*(3.-2.*t);vec3 p=mix(aA.xyz,aB.xyz,t);p+=(aR.xyz-.5)*2.2*sin(3.14159*t);float tone=mix(aA.w,aB.w,t);
 float hk=fract(sin((aR.y*91.7+floor(uTime*2.5))*12.9898)*43758.5);float dm=step(1.-uDamage*.22,hk);p+=dm*(aR.xyz-.5)*.7;p.y-=dm*.15;
-p.y-=uCollapse*uCollapse*(1.5+aR.w*2.);p.xz+=(aR.xz-.5)*uCollapse*.8;
+p+=normalize(p+vec3(.001))*(uCollapse*uCollapse)*(3.5+aR.w*5.0);
 float cy=cos(uYaw),sy=sin(uYaw);p=vec3(cy*p.x+sy*p.z,p.y,-sy*p.x+cy*p.z);float cp=cos(uPitch),sp=sin(uPitch);p=vec3(p.x,cp*p.y-sp*p.z,sp*p.y+cp*p.z);
-float w=3.-p.z;float k=2.6/w;gl_Position=vec4(p.x*k*uScale/uAspect,p.y*k*uScale,0.,1.);vG=step(.78,aR.w);
-gl_PointSize=(vG>.5?11.:2.4)*uSize*k*uDpr;vT=tone*(.55+.45*(p.z+1.)*.5);vA=(1.-uCollapse)*(1.-dm*.65);vC=floor(mod(aR.z*8.+floor(uTime*(2.+aR.x*3.)),8.));}`;
+float w=3.-p.z;float k=2.6/w;gl_Position=vec4(p.x*k*uScale/uAspect,p.y*k*uScale,0.,1.);vG=0.;
+gl_PointSize=2.1*uSize*k*uDpr;vT=tone*(.55+.45*(p.z+1.)*.5);vA=(1.-uCollapse)*(1.-dm*.65);vC=floor(mod(aR.z*8.+floor(uTime*(2.+aR.x*3.)),8.));}`;
 const FS = `precision mediump float;uniform sampler2D uAtlas;varying float vA,vT,vG,vC;
 void main(){float a;if(vG>.5){vec2 c=vec2(mod(vC,4.),floor(vC/4.));a=texture2D(uAtlas,(c+gl_PointCoord)/vec2(4.,2.)).r;}else{a=smoothstep(.5,.15,length(gl_PointCoord-.5));}
-vec3 col=mix(vec3(.31,.86,.91),vec3(.68,.49,1.),vT);gl_FragColor=vec4(col*a*vA*(.35+vT*.9),1.);}`;
+vec3 col=mix(vec3(.78,.86,.93),vec3(1.,1.,1.),vT);gl_FragColor=vec4(col*a*vA*(.35+vT*.9),1.);}`;
 function initGL() {
   try { gl = cv.getContext("webgl", { antialias: false, alpha: true }); } catch (e) { gl = null; }
   if (!gl) return false;
@@ -187,13 +207,13 @@ function drawCPU(time) {
     const sc2 = Math.sin(Math.PI * t) * 2.2;
     let x = A[o] + (Bf[o] - A[o]) * t + (r1 - .5) * sc2, y = A[o + 1] + (Bf[o + 1] - A[o + 1]) * t + (r2 - .5) * sc2, z = A[o + 2] + (Bf[o + 2] - A[o + 2]) * t + (r3 - .5) * sc2;
     const tone = A[o + 3] + (Bf[o + 3] - A[o + 3]) * t;
-    y -= S.collapse * S.collapse * (1.5 + r2 * 2);
+    const burst = S.collapse * S.collapse * (3.5 + r2 * 5); const norm=Math.hypot(x,y,z)||1; x+=x/norm*burst; y+=y/norm*burst; z+=z/norm*burst;
     let x2 = cyw * x + syw * z, z2 = -syw * x + cyw * z, y2 = cp * y - sp * z2, z3 = sp * y + cp * z2;
     const k = 2.6 / (3 - z3), a = (1 - S.collapse) * (.3 + tone * .6);
     if (a <= .02) continue;
-    c.fillStyle = tone > .7 ? `rgba(177,125,255,${a})` : `rgba(76,219,232,${a})`;
+    c.fillStyle = `rgba(236,243,255,${a})`;
     const px = cx + x2 * k * sc, py = cy - y2 * k * sc;
-    if (r3 > .8) c.fillText("01AF7<#/"[(i + Math.floor(time * 2)) % 8], px, py); else c.fillRect(px, py, 1.8, 1.8);
+    c.fillRect(px, py, 1.5, 1.5);
   }
 }
 function radar(time) {
@@ -247,46 +267,74 @@ async function morph(a, b, ms) {
   setPair(a, b); S.mix = 0; const s = performance.now();
   for (;;) { if (dead) return; const p = Math.min(1, (performance.now() - s) / ms); S.mix = reduce ? 1 : p; if (p >= 1 || reduce) break; await frame(); }
 }
+const SYSTEM_LINES = [
+  "NRS / CENTRAL DATA AUTHORITY", "INITIALIZING SENSORY ARRAY", "VERIFYING UNKNOWN TIMELINE",
+  "SIGNAL INTERFERENCE DETECTED", "CONNECTING INTER-TIMELINE RELAY", "CONSCIOUSNESS SYNC : STABLE",
+  "ARCHIVE FRAGMENT 001 : RESTORED", "TIMELINE BRANCH 008 : FOUND", "ACCESS PERMISSION : PENDING",
+  "RECONSTRUCTING ARCHIVE INDEX", "ANOMALY DETECTED / RECHECKING", "MEMORY CHANNELS : ONLINE",
+  "TRANSMISSION RECEIVED", "NRS AUTHORIZATION CONFIRMED", "LOADING ARCHIVED RECORDS"
+];
+let cascadeTimer = 0;
+function startCascade() {
+  cascade.classList.add("on");
+  let n=0;
+  const add=()=>{
+    if(dead) return;
+    const line=el("span","",cascade, SYSTEM_LINES[n % SYSTEM_LINES.length]);
+    line.style.left=(4+rnd()*67)+"%";
+    line.style.top=(8+rnd()*77)+"%";
+    line.style.animationDuration=(.8+rnd()*1.1)+"s";
+    setTimeout(()=>line.remove(),2200);
+    n++;
+  };
+  for(let i=0;i<12;i++) add();
+  cascadeTimer=setInterval(()=>{for(let i=0;i<3;i++)add();},125);
+}
+function stopCascade() {clearInterval(cascadeTimer);cascade.classList.remove("on");cascade.replaceChildren();}
 async function phase2() {
-  mode = "show"; phase.textContent = "PHASE 02 — MULTIVERSE RECONSTRUCTION"; log.textContent = "";
-  hudStart(() => "TIMELINE COHERENCE : " + (S.damage > .2 ? "UNSTABLE" : "SYNCHRONIZING"));
-  const sequence = seen ? ["genesis", "wormhole", "brane"] : ["genesis", "halo", "lattice", "accretion", "vortex", "singularity", "entanglement", "wormhole", "resonance", "brane"];
-  let previous = "noise";
-  for (let i = 0; i < sequence.length; i++) {
-    if (dead) return;
-    const name = sequence[i];
-    S.amp = .18 + .04*(i%3); S.spin = i%2 ? -.3 : .3;
-    hud(`UNIVERSE ${String(i+1).padStart(2,"0")} / ${name.toUpperCase()}`, "INTER-TIMELINE STRUCTURE DETECTED");
-    soundEvent("transition", i);
-    await morph(previous, name, reduce ? 1 : seen ? 550 : 1150);
-    await sleep(reduce ? 40 : seen ? 180 : 330);
-    previous = name;
+  mode="show"; phase.textContent="PHASE 02 — 감각 재구성"; log.textContent="";
+  hudStart(()=>"TIMELINE LINK : SYNCHRONIZING");
+  const sequence=reduce?["wire"]:seen?["head","wire"]:["brain","head","wire"];
+  let previous="noise";
+  for(let i=0;i<sequence.length;i++){
+    if(dead)return;
+    S.amp=.12; S.spin=.17;
+    hud(["NEURAL PATTERN","SUBJECT RECONSTRUCTION","INTER-TIMELINE STRUCTURE"][seen?i+1:i]||"INTER-TIMELINE STRUCTURE", "NRS / 감각 활성화 진행 중");
+    soundEvent("transition",i);
+    await morph(previous,sequence[i],reduce?1:seen?850:1550);
+    await sleep(reduce?40:seen?250:700);
+    previous=sequence[i];
   }
-  if (dead) return;
-  S.amp = .5;
-  hud("MULTIVERSE CONVERGENCE", "ALL TIMELINES LINKED TO CENTRAL ARCHIVE");
-  soundEvent("converge");
-  await sleep(reduce ? 50 : seen ? 300 : 750);
-  if (dead) return;
-  const c0=performance.now(), cd=reduce?1:seen?500:1100;
-  while (!dead) { const p=Math.min(1,(performance.now()-c0)/cd); S.collapse=reduce?1:p; S.damage=.25*p; if(p>=1)break; await frame(); }
+  if(dead)return;
+  hud("TIMELINE CONVERGENCE","감각 동기화 완료 / 확산 시작");
+  soundEvent("converge"); startCascade();
+  const start=performance.now(), duration=reduce?1:seen?600:1050;
+  while(!dead){const q=Math.min(1,(performance.now()-start)/duration);S.collapse=reduce?1:q;S.damage=.2*q;if(q>=1)break;await frame();}
+  await sleep(reduce?30:450);
 }
 async function phase3() {
-  clearInterval(hudT); hl.classList.remove("on"); hr.classList.remove("on"); lab.classList.remove("on"); cv.style.opacity = 0; log.textContent = "";
-  phase.textContent = "PHASE 03 — ARCHIVE AUTHORIZATION"; auth.classList.add("on"); mode = "idle";
-  let v = 0; const s = performance.now(); t3.textContent = "";
-  const ti = setInterval(() => { if (dead) return clearInterval(ti); v = Math.min(98.7, v + 1.9 + rnd()); t3.textContent = `RECONSTRUCTION ${v.toFixed(1)}% (SIMULATED)  /  CHANNELS ${String(7 + Math.floor(rnd() * 3)).padStart(2, "0")}/12`; if (v >= 98.7) clearInterval(ti); }, 90);
-  await sleep(seen ? 400 : 1100); if (dead) return; enter.classList.add("on"); enter.focus();
+  if(dead)return;
+  clearInterval(hudT); hl.classList.remove("on");hr.classList.remove("on");lab.classList.remove("on");
+  cv.style.opacity=0;log.textContent="";
+  phase.textContent="PHASE 03 — 아카이브 인증";auth.classList.add("on");mode="idle";
+  const duration=reduce?150:seen?650:1700,start=performance.now();
+  while(!dead){const q=Math.min(1,(performance.now()-start)/duration);t3.textContent=`ARCHIVE CONNECTION ${Math.round(q*100)}% / NRS : ONLINE`;if(q>=1)break;await frame();}
+  if(dead)return;
+  t3.textContent="연결 완료 / 기록 보관소 진입";
+  await sleep(reduce?50:seen?200:650);
+  finish(false);
 }
 async function run() {
-  phase.textContent = "PHASE 01 — INITIAL CONNECTION"; hud("", "");
-  const L = seen ? ["N.E.R.S.A. CENTRAL ARCHIVE", "REESTABLISHING CONNECTION...", "UNAUTHORIZED TIMELINE DETECTED"] :
-    ["N.E.R.S.A. / CENTRAL DATA AUTHORITY", "REESTABLISHING CONNECTION...", "SIGNAL INTERFERENCE : DETECTED", "INTER-TIMELINE COMMUNICATION ARRAY : DEGRADED", "UNAUTHORIZED TIMELINE DETECTED", "DO NOT TERMINATE THIS CONNECTION."];
-  await type(L, reduce ? 4 : seen ? 12 : 20); if (dead) return; await sleep(seen ? 200 : 600);
-  await phase2(); if (dead) return; await phase3();
+  phase.textContent="PHASE 01 — 초기 연결";
+  const L=seen?["NRS / CENTRAL ARCHIVE", "타임라인 연결 재설정 중..."]:
+    ["NRS / CENTRAL DATA AUTHORITY", "감각 시스템 초기화 중...", "타임라인 신호 탐지...", "시스템 동기화 시작..."];
+  await type(L,reduce?1:seen?7:13);
+  if(dead)return;
+  await sleep(reduce?30:seen?100:300);
+  await phase2();if(dead)return;await phase3();
 }
 function finish(fromSkip) {
-  if (dead) return; dead = true; cancelSleep.forEach((f) => f()); clearInterval(hudT); cancelAnimationFrame(raf);
+  if (dead) return; dead = true; cancelSleep.forEach((f) => f()); clearInterval(hudT); stopCascade(); cancelAnimationFrame(raf);
   try { localStorage.setItem("aegis_intro_seen", "1"); } catch (e) {}
   const cb = onDone; onDone = null; root.classList.add("out"); tick();
   setTimeout(() => { try { if (gl) gl.getExtension("WEBGL_lose_context")?.loseContext(); } catch (e) {} root.remove(); }, 800);
@@ -294,7 +342,7 @@ function finish(fromSkip) {
   if (cb) { try { cb(); } catch(e) { console.error("AEGIS archive transition failed:",e); const boot=document.getElementById("boot"), app=document.getElementById("mainApp"); if(boot) boot.classList.add("hidden"); if(app) app.classList.remove("hidden"); } }
 }
 skip.addEventListener("click", () => finish(true));
-enter.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); finish(false); });
+
 addEventListener("keydown", (e) => { if (!dead && e.key === "Escape") finish(true); });
 
 window.AegisIntro = {

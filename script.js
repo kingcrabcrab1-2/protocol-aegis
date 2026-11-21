@@ -180,7 +180,7 @@ async function bootSequence(short = false) {
 
   const lines = [
 
-    "N.E.R.S.A. U.S. MAIN FACILITY",
+    "NRS U.S. MAIN FACILITY",
     "GARDINERS ISLAND / ARCHIVED TERMINAL",
     "",
     "PROTOCOL : AEGIS",
