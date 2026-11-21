@@ -915,3 +915,15 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
     margin: 0 auto 4px !important;
   }
 }
+
+/* Align the desktop navigation hint vertically with the top search field. */
+@media (min-width:751px) {
+  #mainApp .archive-stage .archive-instructions {
+    position:fixed !important;
+    top:25px !important;
+    bottom:auto !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
+    pointer-events:none !important;
+  }
+}
