@@ -35,3 +35,26 @@
 @keyframes nrsFloat{from{margin-top:-7px;filter:brightness(.88)}to{margin-top:8px;filter:brightness(1.1)}}
 @media(max-width:750px){#mainApp{padding:0 10px 42px}.archive-stage{height:66dvh;min-height:430px}.radar-core{width:330px;height:330px;left:-165px;top:-165px}.archive-records .record{--orbit-radius:200px!important;width:120px;padding:9px!important}.archive-center h1{font-size:24px}.archive-eyebrow,.archive-subtitle{font-size:8px}.archive-actions .utility-btn span{display:none}.archive-search .select{max-width:120px;font-size:10px}.archive-instructions{font-size:8px}#mainApp footer{left:14px!important}.archive-controls{padding:0 7px}.archive-records .record-name{font-size:11px!important}}
 @media(prefers-reduced-motion:reduce){.radar-sweep,.archive-records .record{animation:none!important}}
+
+/* Phase 2C: luminous deep-space relay, wide spatial signals and fixed priority record */
+#mainApp.shell {max-width:none}
+.shell:has(#mainApp:not(.hidden)){width:min(1760px,calc(100% - 24px));max-width:none}
+#mainApp{padding:0 16px 48px}
+.archive-stage{height:min(79dvh,850px);min-height:590px;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 48% 55% at 50% 49%,rgba(196,113,60,.22) 0%,rgba(77,89,108,.13) 40%,rgba(23,33,49,.14) 66%,rgba(9,11,18,.12) 100%)}
+.archive-galaxy{position:absolute;inset:-40%;z-index:-1;pointer-events:none;opacity:.65;filter:blur(35px) saturate(.8);background:radial-gradient(ellipse 28% 11% at 50% 50%,rgba(243,169,114,.22),transparent 75%),radial-gradient(ellipse 40% 16% at 50% 50%,rgba(96,151,185,.18) 0%,rgba(194,117,80,.1) 43%,transparent 80%),radial-gradient(ellipse 35% 8% at 51% 49%,rgba(164,191,217,.15),transparent 85%);transform:rotate(-24deg);animation:galaxyDrift 240s linear infinite}
+.archive-galaxy:after{content:"";position:absolute;inset:13%;border-radius:50%;background:repeating-conic-gradient(from 22deg,transparent 0deg,rgba(150,184,206,.04) 11deg,transparent 22deg,rgba(238,163,112,.045) 35deg,transparent 49deg);filter:blur(45px)}
+@keyframes galaxyDrift{from{transform:rotate(-24deg) scale(1)}to{transform:rotate(336deg) scale(1.06)}}
+.archive-grid{opacity:.5}
+.radar-core{border-color:rgba(255,166,103,.37);box-shadow:0 0 110px rgba(235,127,65,.13),0 0 150px rgba(115,159,194,.08),inset 0 0 85px rgba(229,131,66,.08)}
+.archive-center{text-shadow:0 0 25px rgba(10,10,17,.95),0 0 48px rgba(12,13,20,.95)}
+.archive-center h1{color:#ffd0a1;text-shadow:0 0 32px rgba(248,139,68,.4)}
+.archive-eyebrow,.archive-subtitle{color:#efb78e}
+.archive-records .record{transform:translate(var(--pos-x,0px),var(--pos-y,0px)) rotate(var(--scene-counter,0deg)) scale(var(--card-scale,1));width:clamp(145px,12vw,210px);opacity:.95;background:rgba(16,21,29,.86);border-color:rgba(244,155,99,.55);box-shadow:0 0 26px rgba(243,143,81,.12);transition:border-color .25s,box-shadow .25s,background .25s,scale .25s;will-change:transform}
+.archive-records .record:hover,.archive-records .record:focus-visible{z-index:40;scale:1.14;border-color:#ffcb93;background:rgba(33,33,40,.98);box-shadow:0 0 12px rgba(255,178,105,.6),0 0 45px rgba(255,137,64,.34),inset 0 0 15px rgba(255,165,97,.1);opacity:1}
+.archive-stage>.featured-record{position:absolute;right:5.5%;top:calc(9% + var(--featured-offset,0px));left:auto;z-index:8;width:clamp(210px,17vw,285px);min-height:94px;padding:17px!important;background:linear-gradient(135deg,rgba(54,35,30,.96),rgba(21,28,40,.95));border:1px solid rgba(255,188,119,.82);box-shadow:0 0 28px rgba(255,157,83,.23),inset 0 0 30px rgba(252,155,87,.06);cursor:pointer;animation:featuredBreathe 7s ease-in-out infinite;transition:scale .25s,border-color .25s,box-shadow .25s}
+.archive-stage>.featured-record .record-name{font-size:clamp(13px,1.1vw,17px)!important;color:#ffe0bf}
+.archive-stage>.featured-record:hover,.archive-stage>.featured-record:focus-visible{scale:1.09;border-color:#ffe1ad;box-shadow:0 0 18px rgba(255,180,105,.65),0 0 48px rgba(255,143,67,.32)}
+@keyframes featuredBreathe{50%{box-shadow:0 0 42px rgba(255,157,83,.33),inset 0 0 30px rgba(252,155,87,.08)}}
+#mainApp footer{left:50%!important;right:auto!important;transform:translateX(-50%);text-align:center!important;bottom:19px!important;color:#e8b48c!important;text-shadow:0 0 14px rgba(255,165,91,.32);font-size:12px!important;letter-spacing:.12em}
+@media(max-width:750px){.shell:has(#mainApp:not(.hidden)){width:calc(100% - 8px)}#mainApp{padding:0 4px 44px}.archive-stage{height:72dvh;min-height:470px}.archive-records .record{width:118px;min-height:55px;padding:8px!important}.archive-stage>.featured-record{right:3%;top:5%;width:160px;min-height:70px;padding:10px!important}.archive-stage>.featured-record .record-name{font-size:12px!important}.archive-center{width:85%}.archive-center h1{font-size:23px}#mainApp footer{left:50%!important}}
+@media(prefers-reduced-motion:reduce){.archive-galaxy,.archive-stage>.featured-record{animation:none!important}}

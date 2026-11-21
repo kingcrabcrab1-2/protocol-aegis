@@ -251,6 +251,8 @@ async function loadRecords() {
 }
 
 function renderRecords() {
+  // Remove previously detached priority cards before refreshing filtered results.
+  document.querySelectorAll(".archive-stage > .featured-record").forEach((node) => node.remove());
 
   const keyword =
     $("searchInput")
@@ -297,7 +299,7 @@ function renderRecords() {
     filtered.map((item, index) => `
 
       <article
-        class="record ${item.is_pinned ? "pinned" : ""}" style="--orbit-angle:${(index * 137.508) % 360}deg;--orbit-radius:${235 + (index % 5)*39}px;--float-delay:${-(index % 7)*0.83}s;--depth:${index % 4};"
+        class="record ${item.is_pinned ? "pinned" : ""} ${item.id === 1 || /신지안/.test(item.team_name || "") ? "featured-record" : ""}" style="--float-delay:${-(index % 7)*0.83}s;"
         data-id="${item.id}">
 
         <div class="record-no">
@@ -318,6 +320,27 @@ function renderRecords() {
       </article>
 
     `).join("");
+
+  // Spread regular signals across the available viewport, leaving the central relay readable.
+  const stage = document.querySelector(".archive-stage");
+  const world = $("archiveWorld");
+  const stageWidth = stage.clientWidth;
+  const stageHeight = stage.clientHeight;
+  const regular = [...$("records").querySelectorAll(".record:not(.featured-record)")];
+  regular.forEach((node, i) => {
+    const a = i * 2.399963229728653 + .45;
+    const layer = i % 4;
+    const rx = Math.max(245, stageWidth * (.28 + layer * .055));
+    const ry = Math.max(175, stageHeight * (.28 + (layer % 3) * .045));
+    node.style.setProperty("--pos-x", `${Math.cos(a) * rx}px`);
+    node.style.setProperty("--pos-y", `${Math.sin(a) * ry}px`);
+    node.style.setProperty("--card-scale", `${[.88, 1, .93, 1.06][layer]}`);
+  });
+  // The priority record stays fixed in screen space, independent of world rotation.
+  $("records").querySelectorAll(".featured-record").forEach((node, i) => {
+    stage.appendChild(node);
+    node.style.setProperty("--featured-offset", `${i * 98}px`);
+  });
 
   document
     .querySelectorAll(".record")
@@ -951,7 +974,7 @@ $("restoreFile").addEventListener("change", async (event) => {
     if (!$("reader").classList.contains("hidden") || !dock.classList.contains("hidden")) {
       velocity *= .7;
     } else {
-      target += velocity;
+      target += velocity + (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : .006);
       velocity *= .91;
     }
     angle += (target - angle) * .085;
