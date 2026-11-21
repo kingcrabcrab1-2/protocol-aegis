@@ -596,3 +596,47 @@ body:has(#mainApp:not(.hidden)) .shell,.shell:has(#mainApp:not(.hidden)){width:1
     padding: 38px 18px 24px !important;
   }
 }
+
+/* Mobile hotfix: keep the orbit container visible because it owns #records.
+   Hide only the radar artwork, not its parent. Desktop rules untouched. */
+@media (max-width: 750px) {
+  #mainApp .archive-world {
+    display: block !important;
+    position: relative !important;
+    inset: auto !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    transform: none !important;
+    transform-style: flat !important;
+    pointer-events: auto !important;
+    order: 1;
+    z-index: 2;
+  }
+  #mainApp .archive-world .archive-records,
+  #mainApp .archive-world #records {
+    display: flex !important;
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    pointer-events: auto !important;
+  }
+  #mainApp .archive-world .archive-records .record,
+  #mainApp .archive-world #records .record,
+  #mainApp .archive-world #records .record.featured-record {
+    display: block !important;
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    transform: none !important;
+    animation: none !important;
+    margin: 0 !important;
+  }
+}
